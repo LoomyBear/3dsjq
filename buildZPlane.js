@@ -154,7 +154,12 @@ function zPlaneDisplace(objID) {
 		});
 		
 	} else {
-		zPlaneShifter(target, initLvl, initML, initMR, tPseudo);
+	
+		// Change here! Another change blah blah blah
+		target.each(function(){
+			zPlaneShifter($(this), initLvl, initML, initMR, tPseudo);	
+		});
+		
 	}
 
 }

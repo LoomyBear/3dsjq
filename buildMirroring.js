@@ -5,7 +5,6 @@ var visibleElem = [];
 
 function buildMirroring() {
 	
-	console.log(hoverElemIDs);
 	buildHoverBindings(hoverElemIDs);
 	buildCursor();
 	
@@ -69,8 +68,6 @@ function buildScrollBindings() {
 		var docH = $("."+prefix+"container").height();
 		var newPos = curPos+delta;
 		var limit = docH - winH;
-		
-		console.log(docH);
 		
 		if ( newPos <= 0 && newPos >= limit ) {
 			$("."+prefix+"container").css({ marginTop: newPos });

@@ -37,6 +37,7 @@ var defaultParams = {
 var jsURLs = [];
 var zPlaneShiftedObjs = {
 	".item" : 3,
+	".item:hover" : 3,
 	".aside_navigation" : 3,
 	".main_navigation" : 3,
 	".footer" : 3

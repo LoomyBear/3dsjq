@@ -3,12 +3,13 @@
 var zPlaneDefaultParams = {
 	zMaxShift: 1.5,							// maximum allowed amount of shifting in %				int		
 	zPlaneLevels: 5,						// the maximum number of zPlanes						int
-	zPlaneScale: false,						// enabling/disabling scaling for zPlanes				boolean
+	zPlaneScale: true,						// enabling/disabling scaling for zPlanes				boolean
 	zPlaneScaleAmount: 10,					// amount of scaling in %s								int
 	zPlaneAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
 	zPlaneAnimDuration: 0.2,				// animation duration in seconds						int
 }
 
+var zParams
 var shiftLimit;
 var shiftStep;
 var shiftScale;
@@ -24,7 +25,7 @@ function buildZPlane() {
 	console.log("zPlane building is started ...");
 	
 	var winW = $(window).width();
-	var zParams = zPlaneDefaultParams;
+	zParams = zPlaneDefaultParams;
 
 	// Specifying the maximum limit for shifting according to incoming parameter
 
@@ -164,10 +165,34 @@ function zPlaneDisplace(objID) {
 
 }
 
+function windowViolation(target,level) {
+
+	var winW = $(window).width()/2;
+	var tOffset = target.offset();
+	var tShiftedOffset = tOffset.left-(level*shiftStep);
+
+	if ( zParams["zPlaneScale"] == true ) {
+		var sSA = 1+((initsSA)*(level/shiftMaxLvl))/100;
+		var tW = target.width();
+		var sDelta = ((tW*sSA)-tW)/2;
+		tShiftedOffset = tShiftedOffset-sDelta;
+	}
+
+	if ( tShiftedOffset < 0 ) {
+		console.log("WARNING: "+target.attr("class")+" violated the window by " + tShiftedOffset + "px");
+		return true;
+	} else {
+		return false;
+	}
+	
+}
+
 function zPlaneShifter(target, level, initML, initMR, tPseudo) {
 	
 	sSA = 1+((initsSA)*(level/shiftMaxLvl))/100;
 	var targetClone = getClone(target);
+	
+	var wViolation = windowViolation(target, level);
 	
 	if ( shiftAnim == true ) {
 	
@@ -220,15 +245,6 @@ function zPlaneShifter(target, level, initML, initMR, tPseudo) {
 		deltaCloneRight = deltaRight/4;	
 		
 	}
-
-	/*
-if ( !tPseudo ) {
-		deltaLeft = deltaLeft+(deltaHS/2);
-		deltaRight = deltaRight+(deltaHS/2);
-		deltaCloneLeft = deltaRight;
-		deltaCloneRight = deltaLeft;
-	}
-*/
 	
 	target.css({
 		marginLeft: deltaLeft,
@@ -241,7 +257,7 @@ if ( !tPseudo ) {
 	});
 
 	// Rescaling if enabled
-	if ( shiftScale == true && sSA != 0 ) {			
+	if ( shiftScale == true && sSA != 0 && tPseudo ) {			
 		target.css({
 			"-webkit-transform" : "scale("+sSA+")",
 			"-moz-transform" : "scale("+sSA+")",

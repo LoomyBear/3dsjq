@@ -13,34 +13,21 @@
 
 $.ajaxSetup({ cache: false }); // Prevents caching
 
-var defaultParams = {
-		customCursor: true, 						// enabling/disabling custom cursor  					boolean
-		customCursorURL: "./i/cursor_icon.png",		// URL to get the custom cursor							string
-		cursorExtend: true,							// always put cursor to the top zPlane					boolean
-		zPlaneParams: {
-			zMaxShift: 1.5,							// maximum allowed amount of shifting in %				int		
-			zPlaneLevels: 5,						// the maximum number of zPlanes						int
-			zPlaneScale: true,						// enabling/disabling scaling for zPlanes				boolean
-			zPlaneScaleAmount: 10,					// amount of scaling in %s								int
-			zPlaneAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-			zPlaneAnimDuration: 0.2,				// animation duration in seconds						int
-		},
-		zPlaneShiftedObjs: {
-			"#box2" : 5,
-			"#box3:hover" : 5,
-			"#box4:drag" : 5,
-			"h1" : 5,
-			"img:drag" : 5
-		}
-}
-
 var jsURLs = [];
 var zPlaneShiftedObjs = {
+	
+	// Assets manager
+	
 	".item" : 3,
 	".item:hover" : 3,
 	".aside_navigation" : 3,
 	".main_navigation" : 3,
-	".footer" : 3
+	".footer" : 3,
+	
+	// Serach results
+	".ads" : 3,
+	".img_list" : 3,
+	"#ads_container" : 3,
 }
 
 function loadCloneContent() {

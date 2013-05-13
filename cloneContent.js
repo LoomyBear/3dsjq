@@ -45,6 +45,9 @@ function cloneContent() {
 		elemCount++;
 	});
 	
+	
+	// 1.2. Initial container styling
+	
 	$("."+prefix+"split_part").css({
 		width: "50%",
 		height: "100%",
@@ -52,7 +55,8 @@ function cloneContent() {
 		"background-size": "100% 100%",
 		"background-position": "center center",
 		"background-repeat": "no-repeat",
-		"overflow": "hidden",
+		"overflow-Y": "scroll",
+		"overflow-X": "hidden",
 		position: "relative",
 	});
 	$("."+prefix+"container").css({
@@ -68,18 +72,12 @@ function cloneContent() {
 	
 	var winW = $(window).width();
 	var winH = $(window).height();
-
-	var scrollW = 30; // Number to fix overflowY in case of the scroll appeared
-	$("."+prefix+"container").width(winW); // Fixing the window width in case of scroll
+	var scrollW = originalContainer.width() - originalContainer.get(0).scrollWidth;
+	var curMargin = parseInt($("."+prefix+"container").css("margin-left"));
 	
-	// 1.4. Enabling container scroll mirroring for main containers
-		
-	originalContainer.bind({
-		scroll: function(){
-			var scrollTop = $(this).scrollTop();
-			cloneContainer.scrollTop(scrollTop);
-		}
-	});
+	$("."+prefix+"container")
+		.width(winW) // Fixing the window width in case of scroll
+		.css({ marginLeft: curMargin-scrollW }); // Fixing the scroll gap
 	
 	console.log("cloning is complete");
 	

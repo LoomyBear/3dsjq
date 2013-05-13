@@ -257,7 +257,7 @@ function zPlaneShifter(target, level, initML, initMR, tPseudo) {
 	});
 
 	// Rescaling if enabled
-	if ( shiftScale == true && sSA != 0 && tPseudo ) {			
+	if ( shiftScale == true && sSA != 0 /*&& tPseudo*/ ) {			
 		target.css({
 			"-webkit-transform" : "scale("+sSA+")",
 			"-moz-transform" : "scale("+sSA+")",

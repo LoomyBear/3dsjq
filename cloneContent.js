@@ -55,29 +55,42 @@ function cloneContent() {
 		"background-size": "100% 100%",
 		"background-position": "center center",
 		"background-repeat": "no-repeat",
-		"overflow-Y": "scroll",
-		"overflow-X": "hidden",
+		//"overflow-Y": "scroll",
+		//"overflow-X": "hidden",
 		position: "relative",
 	});
 	$("."+prefix+"container").css({
 		width: "50%",
 		minHeight: "100%",
-		marginLeft: "-50%",
 		"-webkit-transform": "scaleX(0.5)",
 		"-moz-transform": "scaleX(0.5)",
 		"transform": "scaleX(0.5)",
 	});
 	
-	// 1.2. Adjusting clone containers width
+	// 1.2. Adjusting containers width
 	
 	var winW = $(window).width();
 	var winH = $(window).height();
-	var scrollW = originalContainer.width() - originalContainer.get(0).scrollWidth;
-	var curMargin = parseInt($("."+prefix+"container").css("margin-left"));
+	var scrollW;
+	
+	if ( originalContainer.width() > originalContainer.get(0).scrollWidth ) {
+		scrollW = originalContainer.width() - originalContainer.get(0).scrollWidth;
+	} else {
+		scrollW = 0;
+	}
+	var margin = (winW/4)*(-1);
 	
 	$("."+prefix+"container")
 		.width(winW) // Fixing the window width in case of scroll
-		.css({ marginLeft: curMargin-scrollW }); // Fixing the scroll gap
+		.css({ marginLeft: margin-scrollW }); // Fixing the scroll gap
+	
+	// 1.3. Adjusting container height
+	
+	if ( originalContainer.get(0).scrollHeight > originalContainer.height() ) {
+	
+		originalContainer.height( originalContainer.get(0).scrollHeight );
+	
+	}
 	
 	console.log("cloning is complete");
 	

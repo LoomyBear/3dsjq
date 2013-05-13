@@ -26,8 +26,13 @@ var zPlaneShiftedObjs = {
 	
 	// Serach results
 	".ads" : 3,
-	".img_list" : 3,
-	"#ads_container" : 3,
+	".result_title b" : 2,
+	".ads .result_title b" : 0,
+	".img_list" : 4,
+	//".result_title" : 1,
+	//".result_cite" : 1,
+	//".ads .result_title" : 0,
+	//".ads .result_cite" : 0,
 }
 
 function loadCloneContent() {

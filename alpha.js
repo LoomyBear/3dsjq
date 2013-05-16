@@ -9,33 +9,15 @@
 // ==============================================================================
 
 
-// Global vars
-
 $.ajaxSetup({ cache: false }); // Prevents caching
 
-var jsURLs = [];
-var zPlaneShiftedObjs = {
-	
-	// Assets manager
-	
-	".item" : 3,
-	".item:hover" : 3,
-	".aside_navigation" : 3,
-	".main_navigation" : 3,
-	".footer" : 3,
-	
-	// Serach results
-	".ads" : 3,
-	".result_title b" : 2,
-	".ads .result_title b" : 0,
-	".img_list" : 4,
-	//".result_title" : 1,
-	//".result_cite" : 1,
-	//".ads .result_title" : 0,
-	//".ads .result_cite" : 0,
-}
+// Global vars
 
-function loadCloneContent() {
+var jsURLs = [];
+var zPlaneShiftedObjs = [];
+var inputParams = [];
+
+function loadCloneContent( objArr ) {
 	
 	var cloneContentURL = "j/3dsjq/cloneContent.js";   
 	
@@ -102,12 +84,16 @@ function loadScripts(jsURLs) {
 	
 }
 
-function init() {
-
+function go3DS( objArr, params ) {
+	
+	if ( objArr ) {
+		zPlaneShiftedObjs = objArr;
+	}
+	
+	if ( params ) {
+		inputParams = params;
+	}
+	
 	loadCloneContent();
 	
 }
-
-$(window).on({
-	load: init,
-})

@@ -1,15 +1,15 @@
 // Building zSpace
 
 var zPlaneDefaultParams = {
-	zMaxShift: 1.5,							// maximum allowed amount of shifting in %				int		
-	zPlaneLevels: 5,						// the maximum number of zPlanes						int
-	zPlaneScale: true,						// enabling/disabling scaling for zPlanes				boolean
-	zPlaneScaleAmount: 10,					// amount of scaling in %s								int
-	zPlaneAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-	zPlaneAnimDuration: 0.2,				// animation duration in seconds						int
+	maxShift: 1.5,							// maximum allowed amount of shifting in %				int		
+	levels: 5,								// the maximum number of zPlanes						int
+	visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
+	scaleAmount: 10,						// amount of scaling in %s								int
+	scaleAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
+	scaleAnimDuration: 0.2,					// animation duration in seconds						int
 }
 
-var zParams
+var zParams;
 var shiftLimit;
 var shiftStep;
 var shiftScale;
@@ -25,18 +25,29 @@ function buildZPlane() {
 	console.log("zPlane building is started ...");
 	
 	var winW = $(window).width();
+	
 	zParams = zPlaneDefaultParams;
+	
+	// Checking out input params
+	if ( inputParams ) {
+		$.each(inputParams, function(param, val){
+			if ( zParams[param] != val ) {
+				zParams[param] = val;	
+			}
+		});
+	
+	}
 
 	// Specifying the maximum limit for shifting according to incoming parameter
 
-	shiftLimit = Math.round(((winW/100)*zParams["zMaxShift"])/2);
-	shiftStep = Math.round(shiftLimit/zParams["zPlaneLevels"]);
+	shiftLimit = Math.round(((winW/100)*zParams["maxShift"])/2);
+	shiftStep = Math.round(shiftLimit/zParams["levels"]);
 
-	shiftScale = zParams["zPlaneScale"];
-	shiftAnim = zParams["zPlaneAnim"];
-	shiftMaxLvl = zParams["zPlaneLevels"]
-	sAD = zParams["zPlaneAnimDuration"];
-	initsSA = zParams["zPlaneScaleAmount"];
+	shiftScale = zParams["visualCues"];
+	shiftAnim = zParams["scaleAnim"];
+	shiftMaxLvl = zParams["levels"]
+	sAD = zParams["scaleAnimDuration"];
+	initsSA = zParams["scaleAmount"];
 	
 	if ( zPlaneShiftedObjs !== null ) {	
 		$.each(zPlaneShiftedObjs, function(obj, level){
@@ -53,9 +64,11 @@ function buildObjParamArr(obj,level) {
 	var tSplit = tID.split(/:/);
 	var objID = tSplit[0];
 	var objPseudo = tSplit[1];
-	var target = originalContainer.find(objID);
+	
+	var target = $("html").find(objID);
+	
 	var procInd = false;
-	var initLvl = 0;
+	var initLvl = 0;	
 
 	if ( objPseudo ) {
 		$.each(procElemArr, function(key, val){
@@ -171,7 +184,7 @@ function windowViolation(target,level) {
 	var tOffset = target.offset();
 	var tShiftedOffset = tOffset.left-(level*shiftStep);
 
-	if ( zParams["zPlaneScale"] == true ) {
+	if ( zParams["visualCues"] == true ) {
 		var sSA = 1+((initsSA)*(level/shiftMaxLvl))/100;
 		var tW = target.width();
 		var sDelta = ((tW*sSA)-tW)/2;

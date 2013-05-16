@@ -18,7 +18,6 @@ var shiftMaxLvl;
 var sAD;
 var initsSA;
 var objArr = [];
-var procElemArr = [];
 
 function buildZPlane() {
 	
@@ -50,37 +49,37 @@ function buildZPlane() {
 	initsSA = zParams["scaleAmount"];
 	
 	if ( zPlaneShiftedObjs !== null ) {	
+		
 		$.each(zPlaneShiftedObjs, function(obj, level){
-			buildObjParamArr(obj,level);
+				
+			var tID = obj;
+			var tSplit = tID.split(/:/);
+			var objID = tSplit[0];
+			var objPseudo = tSplit[1];
+			var target = $("html").find(objID);
+			
+			if ( objPseudo ) {
+				$.each(zPlaneShiftedObjs, function(key, val){
+					if ( key == objID && /:hover/.test(key) == false ) {
+						initLvl = val;
+					}
+				});
+				pseudoLvl = level;
+			} else {
+				initLvl = level;
+				pseudoLvl = 0;	
+			}
+			
+			buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl );
 			zPlaneDisplace(obj);
+		
 		});
+		
 	}
 	
 }
 
-function buildObjParamArr(obj,level) {
-
-	var tID = obj;
-	var tSplit = tID.split(/:/);
-	var objID = tSplit[0];
-	var objPseudo = tSplit[1];
-	
-	var target = $("html").find(objID);
-	
-	var procInd = false;
-	var initLvl = 0;	
-
-	if ( objPseudo ) {
-		$.each(procElemArr, function(key, val){
-			if ( val["objID"] == objID ) {
-				procInd = true;
-			} else {
-				procElemArr.push(objID, level);
-			}
-		});
-	} else {		
-		procElemArr.push({ objID: objID, level: level });
-	}
+function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
 	
 	target.each(function(){
 	
@@ -99,13 +98,6 @@ function buildObjParamArr(obj,level) {
 		var tML = parseInt($(this).css("margin-left"));
 		var tMR = parseInt($(this).css("margin-right"));
 		var objZID = $(this).data(prefix+"elem_ID");
-		var pseudoLvl = 0;
-		
-		if ( !objPseudo ) {
-			initLvl = level;
-		} else {	
-			pseudoLvl = level;
-		}
 		
 		var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR)
 		

@@ -17,7 +17,7 @@ var jsURLs = [];
 var zPlaneShiftedObjs = [];
 var inputParams = [];
 
-function loadCloneContent( objArr ) {
+function loadCloneContent() {
 	
 	var cloneContentURL = "j/3dsjq/cloneContent.js";   
 	
@@ -25,6 +25,16 @@ function loadCloneContent( objArr ) {
 		console.log("cloneContent() is loaded ...");
 		cloneContent();
 		loadStylesAdaptation();
+	});
+	
+}
+
+function loadFunctions() {
+	
+	var functionsURL = "j/3dsjq/functions.js";   
+	
+	$.getScript(functionsURL, function(){
+		console.log("framework functions are loaded ...");
 	});
 	
 }
@@ -39,7 +49,7 @@ function loadStylesAdaptation() {
 		loadZPlaneBuilder();
 		loadMirroring();
 		loadScripts(jsURLs);
-		loadContentOverlayBuilder();
+		loadMediaViewer();
 	});
 	
 }
@@ -65,11 +75,11 @@ function loadZPlaneBuilder() {
 	
 }
 
-function loadContentOverlayBuilder() {
+function loadMediaViewer() {
 
-	var buildContentOverlayURL = "j/3dsjq/buildContentOverlay.js";
-	$.getScript(buildContentOverlayURL, function(){
-		console.log("buildContentOverlay() is loaded ...");
+	var buildMediaViewerURL = "j/3dsjq/mediaViewer.js";
+	$.getScript(buildMediaViewerURL, function(){
+		console.log("buildMediaViewer() is loaded ...");
 	});
 	
 }
@@ -94,6 +104,7 @@ function go3DS( objArr, params ) {
 		inputParams = params;
 	}
 	
+	loadFunctions();
 	loadCloneContent();
 	
 }

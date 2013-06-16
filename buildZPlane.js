@@ -1,12 +1,12 @@
 // Building zSpace
 
 var zPlaneDefaultParams = {
-	maxShift: 1.5,							// maximum allowed amount of shifting in %				int		
+	depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
 	levels: 5,								// the maximum number of zPlanes						int
 	visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
 	scaleAmount: 10,						// amount of scaling in %s								int
-	scaleAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-	scaleAnimDuration: 0.2,					// animation duration in seconds						int
+	shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
+	shiftAnimDuration: 0.2,					// animation duration in seconds						int
 }
 
 var zParams;
@@ -39,13 +39,13 @@ function buildZPlane() {
 
 	// Specifying the maximum limit for shifting according to incoming parameter
 
-	shiftLimit = Math.round(((winW/100)*zParams["maxShift"])/2);
+	shiftLimit = Math.round(((winW/100)*zParams["depthBudget"])/2);
 	shiftStep = Math.round(shiftLimit/zParams["levels"]);
 
 	shiftScale = zParams["visualCues"];
-	shiftAnim = zParams["scaleAnim"];
+	shiftAnim = zParams["shiftAnim"];
 	shiftMaxLvl = zParams["levels"]
-	sAD = zParams["scaleAnimDuration"];
+	sAD = zParams["shiftAnimDuration"];
 	initsSA = zParams["scaleAmount"];
 	
 	if ( zPlaneShiftedObjs !== null ) {	
@@ -61,7 +61,9 @@ function buildZPlane() {
 			if ( objPseudo ) {
 				$.each(zPlaneShiftedObjs, function(key, val){
 					if ( key == objID && /:hover/.test(key) == false ) {
-						initLvl = val;
+							initLvl = val;
+					} else {
+						initLvl = 0;
 					}
 				});
 				pseudoLvl = level;
@@ -71,7 +73,7 @@ function buildZPlane() {
 			}
 			
 			buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl );
-			zPlaneDisplace(obj);
+			zPlaneDisplace(tID);
 		
 		});
 		
@@ -97,7 +99,7 @@ function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
 		
 		var tML = parseInt($(this).css("margin-left"));
 		var tMR = parseInt($(this).css("margin-right"));
-		var objZID = $(this).data(prefix+"elem_ID");
+		var objZID = getElementID($(this));
 		
 		var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR)
 		
@@ -148,14 +150,14 @@ function zPlaneDisplace(objID) {
 					.css({ zIndex: 1000 })
 					.parent()
 					.css({ zIndex: 1000 });
-				zPlaneShifter($(this), pseudoLvl, initML, initMR, tPseudo);
+				zPlaneShifter($(this), pseudoLvl, initML, initMR);
 			},
 			mouseleave: function(){
 				$(this)
 					.css({ zIndex: tInitZ })
 					.parent()
 					.css({ zIndex: tParentInitZ });
-				zPlaneShifter($(this), initLvl, initML, initMR, tPseudo);
+				zPlaneShifter($(this), initLvl, initML, initMR);
 			}
 		});
 		
@@ -163,7 +165,7 @@ function zPlaneDisplace(objID) {
 	
 		// Change here! Another change blah blah blah
 		target.each(function(){
-			zPlaneShifter($(this), initLvl, initML, initMR, tPseudo);	
+			zPlaneShifter($(this), initLvl, initML, initMR);	
 		});
 		
 	}
@@ -192,7 +194,7 @@ function windowViolation(target,level) {
 	
 }
 
-function zPlaneShifter(target, level, initML, initMR, tPseudo) {
+function zPlaneShifter(target, level, initML, initMR) {
 	
 	sSA = 1+((initsSA)*(level/shiftMaxLvl))/100;
 	var targetClone = getClone(target);

@@ -26,7 +26,9 @@ function cloneContent() {
 	
 	var elemCount = 0;
 	originalContainer.find("."+prefix+"container *").each(function(){
-		$(this).data(prefix+"elem_ID",elemCount);
+		$(this)
+			.data(prefix+"elem_ID",elemCount)
+			.addClass(prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
 	
@@ -41,7 +43,9 @@ function cloneContent() {
 	
 	var elemCount = 0;
 	cloneContainer.find("."+prefix+"container *").each(function(){
-		$(this).data(prefix+"elem_ID",elemCount);
+		$(this)
+			.data(prefix+"elem_ID",elemCount)
+			.addClass(prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
 	
@@ -55,8 +59,7 @@ function cloneContent() {
 		"background-size": "100% 100%",
 		"background-position": "center center",
 		"background-repeat": "no-repeat",
-		//"overflow-Y": "scroll",
-		//"overflow-X": "hidden",
+		overflow: "hidden",
 		position: "relative",
 	});
 	$("."+prefix+"container").css({
@@ -89,26 +92,10 @@ function cloneContent() {
 	if ( originalContainer.get(0).scrollHeight > originalContainer.height() ) {
 	
 		originalContainer.height( originalContainer.get(0).scrollHeight );
+		cloneContainer.height( cloneContainer.get(0).scrollHeight );
 	
 	}
 	
 	console.log("cloning is complete");
-	
-}
-
-// Function to filter the target by [prefix]_elem_ID
-
-function getTargetByID(targetID) {
-
-	return originalContainer.find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
-
-}
-
-// Function to filter the clone of the object
-
-function getClone(target) {
-	
-	targetID = target.data(prefix+"elem_ID");
-	return cloneContainer.find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
 	
 }

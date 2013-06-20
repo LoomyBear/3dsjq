@@ -1,8 +1,5 @@
 // Cloning procedures
 
-prefix = "_3dsjq_";
-originalContainer = 0;
-cloneContainer = 0;
 processedIDs = [];
 
 function cloneContent() {
@@ -17,15 +14,13 @@ function cloneContent() {
 		.css({ height: "100%" })
 		.wrapInner("<div id='"+prefix+"original' class='"+prefix+"split_part' /></div>");
 	
-	originalContainer = $("#"+prefix+"original");
-	
-	originalContainer
+	$("body").getOriginalContainer()
 		.wrapInner("<div class='"+prefix+"container'>")
 	
 	// 1.1. Marking all the content inside the Original and attaching specific #ids
 	
 	var elemCount = 0;
-	originalContainer.find("."+prefix+"container *").each(function(){
+	$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
 		$(this)
 			.data(prefix+"elem_ID",elemCount)
 			.addClass(prefix+"elem_ID_"+elemCount);
@@ -34,15 +29,14 @@ function cloneContent() {
 	
 	// 1.2. Cloning
 	
-	originalContainer
+	$("body").getOriginalContainer()
 		.clone()
 		.attr("id",prefix+"clone")
 		.appendTo("body");
 	
-	cloneContainer = $("#"+prefix+"clone");
-	
 	var elemCount = 0;
-	cloneContainer.find("."+prefix+"container *").each(function(){
+	
+	$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
 		$(this)
 			.data(prefix+"elem_ID",elemCount)
 			.addClass(prefix+"elem_ID_"+elemCount);
@@ -76,8 +70,8 @@ function cloneContent() {
 	var winH = $(window).height();
 	var scrollW;
 	
-	if ( originalContainer.width() > originalContainer.get(0).scrollWidth ) {
-		scrollW = originalContainer.width() - originalContainer.get(0).scrollWidth;
+	if ( $("body").getOriginalContainer().width() > $("body").getOriginalContainer().get(0).scrollWidth ) {
+		scrollW = $("body").getOriginalContainer().width() - $("body").getOriginalContainer().get(0).scrollWidth;
 	} else {
 		scrollW = 0;
 	}
@@ -89,10 +83,10 @@ function cloneContent() {
 	
 	// 1.3. Adjusting container height
 	
-	if ( originalContainer.get(0).scrollHeight > originalContainer.height() ) {
+	if ( $("body").getOriginalContainer().get(0).scrollHeight > $("body").getOriginalContainer().height() ) {
 	
-		originalContainer.height( originalContainer.get(0).scrollHeight );
-		cloneContainer.height( cloneContainer.get(0).scrollHeight );
+		$("body").getOriginalContainer().height( $("body").getOriginalContainer().get(0).scrollHeight );
+		$("body").getCloneContainer().height( $("body").getCloneContainer().get(0).scrollHeight );
 	
 	}
 	

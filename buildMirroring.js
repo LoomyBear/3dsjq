@@ -33,10 +33,10 @@ function buildHoverBindings(objs) {
 
 function buildScrollBindings() {
 		
-	originalContainer.on({
+	$("body").getOriginalContainer().on({
 		scroll: function(){
 			var scrollTop = $(this).scrollTop();
-			cloneContainer.scrollTop(scrollTop);
+			$("body").getCloneContainer().scrollTop(scrollTop);
 		}
 	});
 	
@@ -44,8 +44,8 @@ function buildScrollBindings() {
 
 function buildCursor() {
 	
-	originalContainer.prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor'></div>");
-	cloneContainer.prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor'></div>");
+	$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor'></div>");
+	$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor'></div>");
 	
 	$("."+prefix+"cursor").css({
 		position: "absolute",
@@ -65,7 +65,7 @@ function buildCursor() {
 		
 	var scrollDelta = 0;
 	
-	originalContainer.on({
+	$("body").getOriginalContainer().on({
 		mousemove: function(e){
 		
 			var winW = $(window).width();

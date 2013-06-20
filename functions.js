@@ -1,7 +1,12 @@
+// Global Vars
+
+prefix = "_3dsjq_";
+
+
 // Function to filter the target by [prefix]elem_ID
 function getTargetByID(targetID) {
 
-	return originalContainer.find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
+	return $("body").getOriginalContainer().find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
 
 }
 
@@ -9,7 +14,7 @@ function getTargetByID(targetID) {
 function getClone(target) {
 
 	targetID = target.data(prefix+"elem_ID");
-	return cloneContainer.find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
+	return $("body").getCloneContainer().find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
 
 }
 
@@ -32,11 +37,36 @@ function getStereoContainerWidth() {
 
  	$.fn.extend({ 
  		
+ 		// getOriginalContainer() - Function to get the parent for the original part
+ 		getOriginalContainer: function() {
+ 		 			
+			var originalContainer = this.find("#"+prefix+"original");
+			
+			if ( originalContainer ) {
+	    		return originalContainer;
+	    	} else {
+		    	console.log('getOriginalContainer() failed to find original container within the specified parent.');
+	    	}
+    		
+    	},
+    	
+    	// getCloneContainer() - Function to get the parent for the clone part
+    	getCloneContainer: function() {
+ 		 			
+			var cloneContainer = this.find("#"+prefix+"clone");
+    		if ( cloneContainer ) {
+	    		return cloneContainer;
+	    	} else {
+		    	console.log('getCloneContainer() failed to find clone container within the specified parent.');
+	    	}
+    		
+    	},
+ 		
  		// getBoth() - Function to filter both original and clone elements
  		getBoth: function() {
  		 			
-			var oID = originalContainer.attr("id");
-			var cID = cloneContainer.attr("id");
+			var oID = $("body").getOriginalContainer().attr("id");
+			var cID = $("body").getCloneContainer().attr("id");
 			var outputClass;
 
     		this.each(function() {
@@ -66,7 +96,7 @@ function getStereoContainerWidth() {
 					
 					var targetClass = $(this).attr("class");
 					var classes = targetClass.split(" ");
-					var oID = originalContainer.attr("id");
+					var oID = $("body").getOriginalContainer().attr("id");
 					var selector = "#"+oID+" ";
 					
 					$.each(classes, function(key, val) {

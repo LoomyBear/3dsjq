@@ -1,6 +1,7 @@
 // Building zSpace
 
 var zPlaneDefaultParams = {
+	method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
 	depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
 	levels: 5,								// the maximum number of zPlanes						int
 	visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
@@ -34,7 +35,6 @@ function buildZPlane() {
 				zParams[param] = val;	
 			}
 		});
-	
 	}
 
 	// Specifying the maximum limit for shifting according to incoming parameter

@@ -17,7 +17,7 @@ function buildHoverBindings(objs) {
 		obj = obj.replace(/:hover/, "");
 		var target = $(""+obj);
 		target.each(function(){
-			var clone = getClone($(this));
+			var clone = $(this).getClone();
 			$(this).on({
 				mouseenter: function(){
 					clone.addClass("hover"+prefix);

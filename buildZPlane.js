@@ -194,10 +194,26 @@ function windowViolation(target,level) {
 	
 }
 
+function addLevelClass(target, level) {
+
+	target.getBoth().addClass(prefix+"level_"+level);
+	
+}
+
+function removeLevelClass(target) {
+	
+	var levelClass = getLevelClass(target);
+	target.getBoth().removeClass(levelClass);
+	
+}
+
 function zPlaneShifter(target, level, initML, initMR) {
+
+	initML = parseInt(initML);
+	initMR = parseInt(initMR);
 	
 	sSA = 1+((initsSA)*(level/shiftMaxLvl))/100;
-	var targetClone = getClone(target);
+	var targetClone = target.getClone();
 	
 	var wViolation = windowViolation(target, level);
 	
@@ -242,7 +258,7 @@ function zPlaneShifter(target, level, initML, initMR) {
 		deltaLeft = initML+(level*shiftStep);
 		deltaRight = initMR-(level*shiftStep);
 		deltaCloneLeft = deltaRight;
-		deltaCloneRight = deltaLeft;
+		deltaCloneRight = deltaLeft;		
 	
 	} else if ( level < 0 ) {
 		
@@ -262,8 +278,13 @@ function zPlaneShifter(target, level, initML, initMR) {
 		marginLeft: deltaCloneLeft,
 		marginRight: deltaCloneRight,
 	});
+			
+	if ( level == 0 ) {
+		removeLevelClass(target, level);
+	} else {
+		addLevelClass(target, level);
+	}
 
-	// Rescaling if enabled
 	if ( shiftScale == true && sSA != 0 /*&& tPseudo*/ ) {			
 		target.css({
 			"-webkit-transform" : "scale("+sSA+")",

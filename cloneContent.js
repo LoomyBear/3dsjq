@@ -63,10 +63,6 @@ function adjustSideBySide(method) {
 		$("."+prefix+"split_part").css({
 			width: "100%",
 			height: winH/2,
-			//"background-size": "100% 100%",
-			//"background-position": "center center",
-			//"background-repeat": "no-repeat",
-			//overflow: "hidden",
 			position: "relative",
 		});
 		$("."+prefix+"container").css({

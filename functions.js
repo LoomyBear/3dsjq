@@ -10,14 +10,6 @@ function getTargetByID(targetID) {
 
 }
 
-// Function to filter the clone of the object
-function getClone(target) {
-
-	targetID = target.data(prefix+"elem_ID");
-	return $("body").getCloneContainer().find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
-
-}
-
 // Function to get element's elem_ID
 function getElementID(target) {
 
@@ -33,11 +25,33 @@ function getStereoContainerWidth() {
 	
 }
 
+// Function to get the class containing the current depth level
+function getLevelClass(target) {
+	
+	var levelClass = "";
+	var targetClass = target.attr("class");
+	var classes = targetClass.split(" ");
+	var patt = new RegExp(prefix+"level_", "g");
+				
+	$.each(classes, function(key, val) {
+		if ( patt.test(val) ) {
+			levelClass = val;
+		}
+	});
+	
+	if ( levelClass ) {
+		return levelClass;
+	} else {
+		return 0;
+	}
+	
+}
+
 (function($){
 
  	$.fn.extend({ 
  		
- 		// getOriginalContainer() - Function to get the parent for the original part
+ 		// getOriginalContainer() - Function to get the parent for the original part. Returns original container object.
  		getOriginalContainer: function() {
  		 			
 			var originalContainer = this.find("#"+prefix+"original");
@@ -50,7 +64,7 @@ function getStereoContainerWidth() {
     		
     	},
     	
-    	// getCloneContainer() - Function to get the parent for the clone part
+    	// getCloneContainer() - Function to get the parent for the clone part. Returns clone container object.
     	getCloneContainer: function() {
  		 			
 			var cloneContainer = this.find("#"+prefix+"clone");
@@ -61,17 +75,14 @@ function getStereoContainerWidth() {
 	    	}
     		
     	},
- 		
- 		// getBoth() - Function to filter both original and clone elements
- 		getBoth: function() {
- 		 			
-			var oID = $("body").getOriginalContainer().attr("id");
-			var cID = $("body").getCloneContainer().attr("id");
-			var outputClass;
-
-    		this.each(function() {
-				
-				var targetClass = $(this).attr("class");
+    	
+    	getCountClass: function(){
+	    	
+			var outputClass = "";
+	    	
+	    	this.each(function(){
+		    	
+		    	var targetClass = $(this).attr("class");
 				var classes = targetClass.split(" ");
 				var patt = new RegExp(prefix+"elem_ID_", "g");
 				
@@ -80,19 +91,49 @@ function getStereoContainerWidth() {
 						outputClass = val;
 					}
 				});
+				
+	    	});
+	    	
+	    	return outputClass;
+	    	
+    	},
+ 		
+ 		// getBoth() - Function to filter both original and clone elements. Returns object with a framework specific class.
+ 		getBoth: function() {
+ 		 			
+			var outputClass;
 
+    		this.each(function() {
+				
+				outputClass = $(this).getCountClass();
+				
     		});
     		
-    		return $("."+outputClass);
+    		return $("." + outputClass);
     		
     	},
     	
-    	// shift(level) - Function to shift elements in the zPlane
-    	shift: function(level) {
-    	
-    		if ( level != undefined ) {
+    	// getClone() - Function to filter the clone element. Returns clone object.
+ 		getClone: function() {
+ 		 			
+			var targetID;
+
+    		this.each(function() {
+				
+				targetID = $(this).data(prefix+"elem_ID");
+				
+    		});
     		
-		    	this.each(function() {
+    		return $("body").getCloneContainer().find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
+    		
+    	},
+    	
+    	// shift(level) - Function to shift elements in the zPlane. Returns the target item.
+    	shift: function(level) {
+    		
+	    	this.each(function() {
+				
+				if ( level != undefined && $(this).parents("#"+prefix+"original").length > 0 ) {
 					
 					var targetClass = $(this).attr("class");
 					var classes = targetClass.split(" ");
@@ -107,14 +148,36 @@ function getStereoContainerWidth() {
 					var initML = $(this).css("margin-left");
 					var initMR = $(this).css("margin-right");
 					
-					zPlaneShifter(target, level, initML, initMR)
-	
-	    		});
-	    	
-	    	}
-	    	
+					zPlaneShifter(target, level, initML, initMR);
+
+				}
+    	
+    		});
+	    		    	
 	    	return this;
     	
+    	},
+    	
+    	// getDepthLevel() - Function to get the level of the object. Returns int.
+    	getLevel: function() {
+	    	
+	    	var level;
+	    	
+	    	this.each(function() {
+	    		
+	    		var levelClass = getLevelClass($(this));
+	    		var patt = new RegExp(prefix+"level_","g");
+	    		
+	    		if ( levelClass != 0 ) {
+		    		level = parseInt(levelClass.replace(patt, ""));
+		    	} else {
+			    	level = 0;
+		    	}
+	    		
+	    	});
+	    	
+	    	return level;
+	    	
     	}
     	
 	});

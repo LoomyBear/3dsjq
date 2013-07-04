@@ -18,7 +18,6 @@ var shiftAnim;
 var shiftMaxLvl;
 var sAD;
 var initsSA;
-var objArr = [];
 
 function buildZPlane() {
 	
@@ -81,34 +80,6 @@ function buildZPlane() {
 	
 }
 
-function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
-	
-	target.each(function(){
-	
-		function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR) {
-			return {
-				objID: objID,
-				objZID: objZID,
-				objPseudo: objPseudo,
-				initLvl: initLvl,
-				pseudoLvl: pseudoLvl,
-				initML: initML,
-				initMR: initMR,
-			}
-		}
-		
-		var tML = parseInt($(this).css("margin-left"));
-		var tMR = parseInt($(this).css("margin-right"));
-		var objZID = getElementID($(this));
-		
-		var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR)
-		
-		objArr.push(obj);
-		
-	});
-	
-}
-
 function zPlaneDisplace(objID) {
 
 	var target;
@@ -121,7 +92,7 @@ function zPlaneDisplace(objID) {
 	var objIDSplit = objID.split(/:/);
 	objID = objIDSplit[0];
 	
-	$.each(objArr, function(key, obj){
+	$.each(stereoObjArr, function(key, obj){
 		
 		var tID = obj["objID"];
 		

@@ -1,19 +1,13 @@
 // Global Vars
 
 prefix = "_3dsjq_";
-
-
-// Function to filter the target by [prefix]elem_ID
-function getTargetByID(targetID) {
-
-	return $("body").getOriginalContainer().find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
-
-}
+stereoObjArr = [];
 
 // Function to get element's elem_ID
 function getElementID(target) {
 
-	return $(this).data(prefix+"elem_ID");
+	var output = target.getCountClass().replace(prefix+"elem_ID_", "");
+	return output;
 
 }
 
@@ -47,6 +41,45 @@ function getLevelClass(target) {
 	
 }
 
+// buildObjParamArr( ... ) - function to store initial data for elements to be shifted
+function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
+	
+	target.each(function(){
+	
+		function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR) {
+			return {
+				objID: objID,
+				objZID: objZID,
+				objPseudo: objPseudo,
+				initLvl: initLvl,
+				pseudoLvl: pseudoLvl,
+				initML: initML,
+				initMR: initMR,
+			}
+		}
+		
+		function objInArray(tID) {
+			$.each(stereoObjArr, function(key, val){
+				if( val["objID"] == tID ){
+					return true;
+				} else {
+					return false;
+				};
+			});
+		}
+		
+		var tML = parseInt($(this).css("margin-left"));
+		var tMR = parseInt($(this).css("margin-right"));
+		var objZID = getElementID($(this));
+		
+		var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR);
+		stereoObjArr.push(obj);
+		
+	});
+	
+}
+
+// jQuery extensions
 (function($){
 
  	$.fn.extend({ 
@@ -120,11 +153,11 @@ function getLevelClass(target) {
 
     		this.each(function() {
 				
-				targetID = $(this).data(prefix+"elem_ID");
+				outputClass = $(this).getCountClass();
 				
     		});
     		
-    		return $("body").getCloneContainer().find("*").filter(function(){ return $(this).data(prefix+"elem_ID") == targetID; });
+    		return $("body").getCloneContainer().find("." + outputClass);
     		
     	},
     	

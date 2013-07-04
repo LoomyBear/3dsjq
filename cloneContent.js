@@ -1,12 +1,10 @@
 // Cloning procedures
 
-processedIDs = [];
-
 function cloneContent() {
 
 	console.log("cloning is started");
 
-	// 1.0. Splitting content into original and clone parts and applying styles
+	// Splitting content into original and clone parts and applying styles
 	
 	$("html")
 		.css({ height: "100%" })
@@ -17,17 +15,16 @@ function cloneContent() {
 	$("body").getOriginalContainer()
 		.wrapInner("<div class='"+prefix+"container'>")
 	
-	// 1.1. Marking all the content inside the Original and attaching specific #ids
+	// Marking all the content inside the Original and attaching specific #ids
 	
 	var elemCount = 0;
 	$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
 		$(this)
-			.data(prefix+"elem_ID",elemCount)
 			.addClass(prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
 	
-	// 1.2. Cloning
+	// Cloning
 	
 	$("body").getOriginalContainer()
 		.clone()
@@ -37,12 +34,18 @@ function cloneContent() {
 	var elemCount = 0;
 	
 	$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
-		$(this)
-			.data(prefix+"elem_ID",elemCount)
-			.addClass(prefix+"elem_ID_"+elemCount);
+		$(this).addClass(prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
-
+	
+	// Replacing id attributes inside the clone
+	
+	$("body").getCloneContainer().find("div [id]").each(function() {
+		var ID = $(this).attr("id");
+		var newID = ID+prefix;
+		$(this).attr("id",newID);
+	});
+	
 	var method = inputParams["method"];
 	adjustSideBySide(method);
 	
@@ -65,6 +68,7 @@ function adjustSideBySide(method) {
 			height: winH/2,
 			position: "relative",
 		});
+		
 		$("."+prefix+"container").css({
 			width: "100%",
 			height: winH,
@@ -88,9 +92,10 @@ function adjustSideBySide(method) {
 			overflow: "hidden",
 			position: "relative",
 		});
+		
 		$("."+prefix+"container").css({
 			width: "50%",
-			minHeight: "100%",
+			minHeight: winH,
 			"-webkit-transform": "scaleX(0.5)",
 			"-moz-transform": "scaleX(0.5)",
 			"transform": "scaleX(0.5)",

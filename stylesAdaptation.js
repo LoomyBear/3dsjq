@@ -58,7 +58,7 @@ function buildCloneStylesheet(inputCSS) {
 	
 		if (ruleType == "id") {
 			rulePatt = new RegExp("(#(.*?),[\r\n])?#(.*?){(\n|.)*?}","gm");
-			fetchID = new RegExp("#.[A-z|0-9|-]*", "g");
+			fetchID = new RegExp("(#.*(?=(\s\{)))|(#.*(?=(\{)))", "g");
 		} else if ( ruleType == "hover" ) {
 			rulePatt = new RegExp("((.*:hover.*,[\\s])*)?.*hover.*{[\\s]*?.*[\\s]?}","gm");
 			fetchID = new RegExp("(((.*hover,[\\s])*)?.*{)|(.*hover)", "g");
@@ -78,10 +78,19 @@ function buildCloneStylesheet(inputCSS) {
 					$.each(ruleIDs, function(key, ruleID) {
 					
 						if ( ruleType == "id" ) {
-								
-							var ruleReplacePatt = new RegExp(ruleID,"g");
-							var cloneID = ruleID+prefix+"clone";
-							cssRule = cssRule.replace(ruleID, cloneID);		
+							
+							var selSplit = ruleID.split(/\s/);
+							var replacePatt;
+							var idSel;
+							
+							$.each(selSplit, function(key, sel){
+								if ( /#/.test(sel) ) {
+									replacePatt = new RegExp(sel,"g");
+									idSel = sel+prefix;
+								}
+							});							
+							
+							cssRule = cssRule.replace(replacePatt, idSel);		
 						
 						}
 						

@@ -7,7 +7,7 @@ var zPlaneDefaultParams = {
 	visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
 	scaleAmount: 10,						// amount of scaling in %s								int
 	shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-	shiftAnimDuration: 0.2,					// animation duration in seconds						int
+	shiftAnimDuration: 0.25,					// animation duration in seconds						int
 }
 
 var zParams;
@@ -71,8 +71,8 @@ function buildZPlane() {
 				pseudoLvl = 0;	
 			}
 			
-			buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl );
-			zPlaneDisplace(tID);
+			buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl );
+			zPlaneDisplace(target);
 		
 		});
 		
@@ -80,23 +80,17 @@ function buildZPlane() {
 	
 }
 
-function zPlaneDisplace(objID) {
-
-	var target;
+function zPlaneDisplace(target) {
+	
 	var tPseudo;
 	var initML;
 	var initMR;
 	var initLvl;
 	var pseudoLvl;
 	
-	var objIDSplit = objID.split(/:/);
-	objID = objIDSplit[0];
-	
 	$.each(stereoObjArr, function(key, obj){
 		
-		var tID = obj["objID"];
-		
-		if ( tID == objID ) {
+		if ( obj["objZID"] == target.getElementID() ) {			
 			tPseudo = obj["objPseudo"];
 			initML = obj["initML"];
 			initMR = obj["initMR"];
@@ -105,8 +99,6 @@ function zPlaneDisplace(objID) {
 		}
 		
 	});
-	
-	target = $(""+objID);
 	
 	if ( tPseudo == "hover" ) {
 		
@@ -134,7 +126,6 @@ function zPlaneDisplace(objID) {
 		
 	} else {
 	
-		// Change here! Another change blah blah blah
 		target.each(function(){
 			zPlaneShifter($(this), initLvl, initML, initMR);	
 		});

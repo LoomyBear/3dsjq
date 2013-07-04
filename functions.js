@@ -3,13 +3,6 @@
 prefix = "_3dsjq_";
 stereoObjArr = [];
 
-// Function to get element's elem_ID
-function getElementID(target) {
-
-	var output = target.getCountClass().replace(prefix+"elem_ID_", "");
-	return output;
-
-}
 
 // Function to get container width
 function getStereoContainerWidth() {
@@ -42,38 +35,32 @@ function getLevelClass(target) {
 }
 
 // buildObjParamArr( ... ) - function to store initial data for elements to be shifted
-function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
+function buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl ) {
 	
 	target.each(function(){
 	
-		function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR) {
-			return {
-				objID: objID,
-				objZID: objZID,
-				objPseudo: objPseudo,
-				initLvl: initLvl,
-				pseudoLvl: pseudoLvl,
-				initML: initML,
-				initMR: initMR,
+		if ( $(this).isCalculated() == false ) {
+			
+			function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR) {
+				return {
+					objID: objID,
+					objZID: objZID,
+					objPseudo: objPseudo,
+					initLvl: initLvl,
+					pseudoLvl: pseudoLvl,
+					initML: initML,
+					initMR: initMR,
+				}
 			}
+			
+			var tML = parseInt($(this).css("margin-left"));
+			var tMR = parseInt($(this).css("margin-right"));
+			var objZID = $(this).getElementID();
+			
+			var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR);
+			stereoObjArr.push(obj);
+		
 		}
-		
-		function objInArray(tID) {
-			$.each(stereoObjArr, function(key, val){
-				if( val["objID"] == tID ){
-					return true;
-				} else {
-					return false;
-				};
-			});
-		}
-		
-		var tML = parseInt($(this).css("margin-left"));
-		var tMR = parseInt($(this).css("margin-right"));
-		var objZID = getElementID($(this));
-		
-		var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR);
-		stereoObjArr.push(obj);
 		
 	});
 	
@@ -109,6 +96,7 @@ function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
     		
     	},
     	
+    	// getCountClass() - function to extract the class containing elem_ID
     	getCountClass: function(){
 	    	
 			var outputClass = "";
@@ -128,6 +116,21 @@ function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
 	    	});
 	    	
 	    	return outputClass;
+	    	
+    	},
+		
+		// getElementID() - function to get elem_ID of the current element    	
+    	getElementID: function(){
+	    	
+			var output;
+	    	
+	    	this.each(function(){
+		    	
+		    	output = $(this).getCountClass().replace(prefix+"elem_ID_", "");
+				
+	    	});
+	    	
+	    	return output;
 	    	
     	},
  		
@@ -161,6 +164,28 @@ function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
     		
     	},
     	
+    	
+    	// isCalculated() - checks if the current element params have being calculated and pushed to stereoObjArr; 
+ 		isCalculated: function() {
+	 		
+	 		var isCalculated = false;
+	 		
+    		this.each(function() {
+				
+				var tID = $(this).getElementID();
+				
+				$.each(stereoObjArr, function(key, arr){
+					if( arr["objZID"] == tID ) {
+						isCalculated = true;
+					}
+				});
+				
+    		});
+    		
+    		return isCalculated;
+    		
+    	},
+    	
     	// shift(level) - Function to shift elements in the zPlane. Returns the target item.
     	shift: function(level) {
     		
@@ -178,10 +203,20 @@ function buildObjParamArr( target, tID, objID, objPseudo, initLvl, pseudoLvl ) {
 					});
 					
 					var target = $(""+selector);
-					var initML = $(this).css("margin-left");
-					var initMR = $(this).css("margin-right");
+					buildObjParamArr( target, selector, 0, 0, 0 );
 					
-					zPlaneShifter(target, level, initML, initMR);
+					$.each(stereoObjArr, function(key, obj){
+		
+						if ( obj["objZID"] == target.getElementID() ) {
+						
+							var initML = obj["initML"];
+							var initMR = obj["initMR"];
+						
+							zPlaneShifter(target, level, initML, initMR);
+						
+						}
+					
+					});
 
 				}
     	

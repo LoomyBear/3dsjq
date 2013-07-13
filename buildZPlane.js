@@ -213,21 +213,21 @@ function zPlaneShifter(target, level, initML, initMR) {
 	var tW = target.width();
 	var tH = target.height();
 	deltaHS = (tW*sSA)-tW;
-	deltaVS = (tH*sSA)-tH;
+	deltaVS = (tH*sSA)-tH;	
 	
 	if ( level >= 0 ) {
 	
 		deltaLeft = initML+(level*shiftStep);
 		deltaRight = initMR-(level*shiftStep);
-		deltaCloneLeft = deltaRight;
-		deltaCloneRight = deltaLeft;		
+		deltaCloneLeft = initML-(level*shiftStep);
+		deltaCloneRight = initMR+(level*shiftStep);		
 	
 	} else if ( level < 0 ) {
 		
-		deltaLeft = initML+(level*shiftStep);
-		deltaRight = initMR-(level*shiftStep);
-		deltaCloneLeft = deltaLeft/4;
-		deltaCloneRight = deltaRight/4;	
+		deltaLeft = initML-(level*shiftStep);
+		deltaRight = initMR+(level*shiftStep);
+		deltaCloneLeft = initML+(level*shiftStep);
+		deltaCloneRight = initMR-(level*shiftStep);	
 		
 	}
 	

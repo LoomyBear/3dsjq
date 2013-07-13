@@ -2,6 +2,7 @@
 
 prefix = "_3dsjq_";
 stereoObjArr = [];
+hoverElemIDs = [];
 
 
 // Function to get container width

@@ -1,10 +1,7 @@
 // Interaction mirroring procedures
 
-var hoverElemXY = [];
-var visibleElem = [];
-
 function buildMirroring() {
-	
+
 	buildHoverBindings(hoverElemIDs);
 	buildScrollBindings();
 	buildCursor();

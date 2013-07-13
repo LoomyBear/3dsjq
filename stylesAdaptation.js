@@ -1,7 +1,4 @@
 // Parsing stylesheets
-// NB: Works only online
-
-hoverElemIDs = [];
 
 function stylesAdaptation() {
 	
@@ -44,78 +41,72 @@ function stylesAdaptation() {
 
 function buildCloneStylesheet(inputCSS) {
 	
-	inputCSS = inputCSS.replace(/[\r]/gm," "); // Removing line breaks
-	
-	var ruleTypes = [ "id", "hover" ];
+	inputCSS = inputCSS.toString();
+	inputCSS = inputCSS.replace(/[\t]|[\r\n]/gm," "); // Removing line breaks and tabs
+		
 	var outputCSS = [];
-	//console.log(inputCSS);
 	
-	$.each(ruleTypes, function(key, ruleType) {
-		
-		var rulePatt;
-		var fetchRule;
-		var fetchID;
+	var fetchRules = new RegExp("\}.[^}]*","gm");
+	var rulesArr = inputCSS.match(fetchRules);		
 	
-		if (ruleType == "id") {
-			rulePatt = new RegExp("(#(.*?),[\r\n])?#(.*?){(\n|.)*?}","gm");
-			fetchID = new RegExp("(#.*(?=(\s\{)))|(#.*(?=(\{)))", "g");
-		} else if ( ruleType == "hover" ) {
-			rulePatt = new RegExp("((.*:hover.*,[\\s])*)?.*hover.*{[\\s]*?.*[\\s]?}","gm");
-			fetchID = new RegExp("(((.*hover,[\\s])*)?.*{)|(.*hover)", "g");
-		}
+	var outputRules;
+	
+	$.each(rulesArr, function(key, rule){
 		
-		inputCSS = inputCSS.toString();
-		var inputCSSRules = inputCSS.match(rulePatt);
-
-		if ( inputCSSRules !== null ) {
-				
-			$.each(inputCSSRules, function(key, cssRule) {
-				
-				var cssID = cssRule.replace(/\{.*\}/g, "");
-				var ruleIDs = cssID.match(fetchID);
-				if ( ruleIDs !== null ) {
-				
-					$.each(ruleIDs, function(key, ruleID) {
-					
-						if ( ruleType == "id" ) {
-							
-							var selSplit = ruleID.split(/\s/);
-							var replacePatt;
-							var idSel;
-							
-							$.each(selSplit, function(key, sel){
-								if ( /#/.test(sel) ) {
-									replacePatt = new RegExp(sel,"g");
-									idSel = sel+prefix;
-								}
-							});							
-							
-							cssRule = cssRule.replace(replacePatt, idSel);		
-						
-						}
-						
-						if ( ruleType == "hover" ) {
-							ruleID = ruleID.replace(/\{|\s\{/gm, "").replace(/[\r\n]/gm,"").replace(/:hover/gm,"");
-							var idArr = ruleID.split(/,/);
-							$.each(idArr, function(key, id){
-								hoverElemIDs.push(id);
-							});
-						}
-						
-						cssRule = cssRule.replace(/:hover/gm, ".hover"+prefix);
-						
-					});
-				
-				}
-				
-				outputCSS.push(cssRule);
-				
-			});
+		var outputRule;
+		var newSel;
+		var selRepPatt;
+		var pushFlag = false;
+		
+		rule = rule.replace(/\}\s/, "").replace(/\/\*.*?\*\//, "").replace(/\s\s/, "") + "}";
+		
+		var selector = rule.replace(/\{.*\}/,"");
+		var selArr = selector.split(/,/);
+		var style = rule.replace(/^.[^{]*/,"");
+		
+		$.each(selArr, function(key, sel){
+		
+			var hoverCheck = /:hover/.test(sel);
+			var idCheck = /#/.test(sel);
+		
+			if ( hoverCheck == true || idCheck == true ) {
+				pushFlag = true;
+			}
 			
-		}
-		
+			if ( hoverCheck == true ) {
+			
+				hoverElemIDs.push( sel.replace(/:hover/, "") );
+				sel = sel.replace(/:hover/,".hover"+prefix);
+			
+			}
+			
+			if ( idCheck == true ) {
+				
+				sel = sel.replace(/^\s*/,"");
+				var sArr = sel.split(/\s/);
+				
+				$.each(sArr,function(k, s){
+					
+					if ( /#/.test(s) ) {
+						var repPatt = new RegExp(s, "g");
+						sel = sel.replace(repPatt, s+prefix); 
+					}
+					
+				});
+			
+			}
+			
+			if ( pushFlag == true ) {
+			
+				outputRule = sel+style;
+				outputCSS.push(outputRule);
+				
+			}
+			
+		});
+	
 	});
-
+	
 	if ( outputCSS !== null ) {
 
 		$("<style type='text/css' />")

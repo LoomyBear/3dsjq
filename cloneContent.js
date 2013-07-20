@@ -3,6 +3,11 @@
 function cloneContent() {
 
 	console.log("cloning is started");
+	
+	// Vars
+	
+	bodyBack = $("body").css("background");
+	initContent = $("body").html();
 
 	// Splitting content into original and clone parts and applying styles
 	
@@ -50,6 +55,9 @@ function cloneContent() {
 	adjustSideBySide(method);
 	
 	console.log("cloning is complete");
+	
+	// Launching styles adaptation
+	stylesAdaptation();
 	
 }
 
@@ -120,6 +128,11 @@ function adjustSideBySide(method) {
 		}
 		
 	}
+	
+	// Applying body background on the stereo containers
+	
+	$("body").getOriginalContainer().css({ background: bodyBack });
+	$("body").getCloneContainer().css({ background: bodyBack });
 	
 	// Reinitiating the procedure on window resize
 	 

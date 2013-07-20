@@ -1,10 +1,15 @@
+// buildMirroring.js
+
 // Interaction mirroring procedures
 
 function buildMirroring() {
-
+	
 	buildHoverBindings(hoverElemIDs);
 	buildScrollBindings();
 	buildCursor();
+	
+	// Building zPlane
+	buildZPlane();
 	
 }
 

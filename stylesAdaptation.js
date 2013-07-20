@@ -1,3 +1,5 @@
+// stylesAdaptation.js
+
 // Parsing stylesheets
 
 function stylesAdaptation() {
@@ -74,10 +76,8 @@ function buildCloneStylesheet(inputCSS) {
 			}
 			
 			if ( hoverCheck == true ) {
-			
 				hoverElemIDs.push( sel.replace(/:hover/, "") );
 				sel = sel.replace(/:hover/,".hover"+prefix);
-			
 			}
 			
 			if ( idCheck == true ) {
@@ -93,6 +93,13 @@ function buildCloneStylesheet(inputCSS) {
 					}
 					
 				});
+				
+				// Relative URLs fix
+				
+				if ( /\.\.\//.test(style) ) {
+					var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
+					style = style.replace(/\.\.\//g, urlPrefix+"/");
+				}
 			
 			}
 			

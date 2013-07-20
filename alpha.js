@@ -9,13 +9,39 @@
 // ==============================================================================
 
 
-$.ajaxSetup({ cache: false }); // Prevents caching
-
 // Global vars
 
 var jsURLs = [];
 var zPlaneShiftedObjs = [];
 var inputParams = [];
+var prefix = "_3dsjq_";
+var stereoObjArr = [];
+var hoverElemIDs = [];
+var initContent;
+var bodyBack;
+
+var zPlaneDefaultParams = {
+	method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
+	depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
+	levels: 5,								// the maximum number of zPlanes						int
+	visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
+	scaleAmount: 10,						// amount of scaling in %s								int
+	shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
+	shiftAnimDuration: 0.25,				// animation duration in seconds						int
+}
+
+var zParams;
+var shiftLimit;
+var shiftStep;
+var shiftScale;
+var shiftAnim;
+var shiftMaxLvl;
+var sAD;
+var initsSA;
+
+// Preventing AJAX caching
+$.ajaxSetup({ cache: false }); // Prevents caching
+
 
 function loadCloneContent() {
 	

@@ -531,16 +531,16 @@ function buildCloneStylesheet(inputCSS) {
 			var hoverCheck = /:hover/.test(sel);
 			var idCheck = /#/.test(sel);
 		
-			if ( hoverCheck == true || idCheck == true ) {
+			if ( hoverCheck || idCheck ) {
 				pushFlag = true;
 			}
 			
-			if ( hoverCheck == true ) {
+			if ( hoverCheck ) {
 				hoverElemIDs.push( sel.replace(/:hover/, "") );
 				sel = sel.replace(/:hover/,".hover"+prefix);
 			}
 			
-			if ( idCheck == true ) {
+			if ( idCheck ) {
 				
 				sel = sel.replace(/^\s*/,"");
 				var sArr = sel.split(/\s/);
@@ -548,6 +548,12 @@ function buildCloneStylesheet(inputCSS) {
 				$.each(sArr,function(k, s){
 					
 					if ( /#/.test(s) ) {
+						
+						if ( /\./.test(s) ) {
+							s = s.split(/\./);
+							s = s[0];
+						}
+						
 						var repPatt = new RegExp(s, "g");
 						sel = sel.replace(repPatt, s+prefix); 
 					}

@@ -17,7 +17,8 @@ function cloneContent() {
 		.css({ height: "100%" })
 		.wrapInner("<div id='"+prefix+"original' class='"+prefix+"split_part' /></div>");
 	
-	$("body").getOriginalContainer()
+	$("body")
+		.getOriginalContainer()
 		.wrapInner("<div class='"+prefix+"container'>")
 	
 	// Marking all the content inside the Original and attaching specific #ids
@@ -31,33 +32,37 @@ function cloneContent() {
 	
 	// Cloning
 	
-	$("body").getOriginalContainer()
+	$("body")
+		.getOriginalContainer()
 		.clone()
 		.attr("id",prefix+"clone")
 		.appendTo("body");
 	
 	var elemCount = 0;
 	
-	$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
-		$(this).addClass(prefix+"elem_ID_"+elemCount);
-		elemCount++;
-	});
+	$("body")
+		.getCloneContainer()
+		.find("."+prefix+"container *")
+		.each(function(){
+			$(this).addClass(prefix+"elem_ID_"+elemCount);
+			elemCount++;
+		});
 	
 	// Replacing id attributes inside the clone
 	
-	$("body").getCloneContainer().find("div [id]").each(function() {
-		var ID = $(this).attr("id");
-		var newID = ID+prefix;
-		$(this).attr("id",newID);
-	});
+	$("body")
+		.getCloneContainer()
+		.find("div [id]")
+		.each(function() {
+			var ID = $(this).attr("id");
+			var newID = ID+prefix;
+			$(this).attr("id",newID);
+		});		
 	
 	var method = inputParams["method"];
 	adjustSideBySide(method);
 	
 	console.log("cloning is complete");
-	
-	// Launching styles adaptation
-	stylesAdaptation();
 	
 }
 
@@ -97,7 +102,7 @@ function adjustSideBySide(method) {
 			"background-size": "100% 100%",
 			"background-position": "center center",
 			"background-repeat": "no-repeat",
-			overflow: "hidden",
+			// overflow: "hidden",
 			position: "relative",
 		});
 		

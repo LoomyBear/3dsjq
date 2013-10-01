@@ -1,5 +1,3 @@
-// stylesAdaptation.js
-
 // Parsing stylesheets
 
 function stylesAdaptation() {

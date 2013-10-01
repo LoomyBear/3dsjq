@@ -39,7 +39,7 @@ function buildFullScreenOverlay(contentType, fileURL) {
 	
 		$(window).on({
 			keydown: function(e){
-				if ( e.keyCode == 27 ) {
+				if ( e.keyCode == 27 && $("#"+prefix+"content_overlay").length > 0 ) {
 					destroyOverlay();
 				}	
 			}
@@ -114,7 +114,7 @@ function destroyOverlay(e) {
 			opacity:0
 		},500, function(){
 			contentOverlay.remove();
-			$(window).off();
+			//$(window).off();
 		});
 }
 

@@ -8,9 +8,6 @@ function buildMirroring() {
 	buildScrollBindings();
 	buildCursor();
 	
-	// Building zPlane
-	buildZPlane();
-	
 }
 
 function buildHoverBindings(objs) {

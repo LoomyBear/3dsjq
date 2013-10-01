@@ -49,7 +49,6 @@ function loadCloneContent() {
 	
 	$.getScript(cloneContentURL, function(){
 		console.log("cloneContent() is loaded ...");
-		cloneContent();
 		loadStylesAdaptation();
 	});
 	
@@ -61,6 +60,7 @@ function loadFunctions() {
 	
 	$.getScript(functionsURL, function(){
 		console.log("framework functions are loaded ...");
+		loadCloneContent();
 	});
 	
 }
@@ -131,6 +131,6 @@ function go3DS( objArr, params ) {
 	}
 	
 	loadFunctions();
-	loadCloneContent();
+	//loadCloneContent();
 	
 }

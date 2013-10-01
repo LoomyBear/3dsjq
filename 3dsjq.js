@@ -454,7 +454,8 @@ function adjustSideBySide(method) {
 
 function stylesAdaptation() {
 	
-	var stylesheets = [];
+	var stylesheetURLs = [];
+	var stylesheetInlines = "";
 	var curURL = window.location.href;
 
 	console.log("adaptation is started");
@@ -463,12 +464,19 @@ function stylesAdaptation() {
 		.find("link[rel='stylesheet']")
 		.each(function(){
 			var styleURL = $(this).attr("href");
-			stylesheets.push(styleURL);
+			stylesheetURLs.push(styleURL);
 		});
-
-	if ( stylesheets !== "" ) {
 	
-		$.each(stylesheets, function(key, stylesheet){
+	$("html")
+		.find("style")
+		.each(function(){
+			var stylesheetStr = $(this).html();
+			stylesheetInlines = stylesheetInlines + stylesheetStr;
+		});		
+		
+	if ( stylesheetURLs !== "" ) {
+	
+		$.each(stylesheetURLs, function(key, stylesheet){
 		
 			$.ajaxSetup({ cache: false }); // Prevents caching
 			
@@ -479,7 +487,7 @@ function stylesAdaptation() {
 			
 			}).fail( function(){
 			
-				console.log( "   error occured: " + stylesheet + " cannot be opened" );
+				console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
 			
 			});
 		
@@ -488,6 +496,8 @@ function stylesAdaptation() {
 		console.log("adaptation is complete");
 		
 	}
+	
+	if ( stylesheetInlines !== "" ) { buildCloneStylesheet(stylesheetInlines); }
 
 }
 

@@ -9,6 +9,8 @@ var hoverElemIDs = [];
 var initContent;
 var bodyBack;
 
+var elemCount; // Counting number of elements in a markaup
+
 var zPlaneDefaultParams = {
 	method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
 	depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
@@ -198,8 +200,6 @@ function buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl ) {
     	
     	// getClone() - Function to filter the clone element. Returns clone object.
  		getClone: function() {
- 		 			
-			var targetID;
 
     		this.each(function() {
 				
@@ -211,6 +211,125 @@ function buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl ) {
     		
     	},
     	
+    	// appendBoth() - Function to append elements to both original and clone containers. Returns target object.
+ 		appendBoth: function(html) {
+
+    		this.each(function() {
+				
+				var originalHTML = html;
+				var cloneHTML = html;
+				var tags = html.match(/<\w.*?>/gm);
+				
+				$.each( tags, function( i, tag ){
+					
+					var idAttrs = tag.match(/id=("|').*?("|')/);
+					
+					if ( idAttrs ) {
+						$.each( idAttrs, function( x, idAttr ){
+							
+							if ( /id=/.test(idAttr) ) {
+								var idStr = idAttr.replace(/id=("|')/,"").replace(/("|')/,"");
+								var outputID = idStr+prefix;
+								var repPatt = new RegExp( "id=(\"|')" + idStr );
+								cloneHTML = cloneHTML.replace( repPatt, "id='" + outputID );	
+							}
+						});
+					}
+					
+					var classAttrs = tag.match(/class=("|').*?("|')/);
+					
+					if ( classAttrs ) {
+						$.each( classAttrs, function( x, classAttr ){
+							
+							if ( /class=/.test(classAttr) ) {
+								elemCount++;
+								var classStr = classAttr.replace(/class=("|')/,"").replace(/("|')/,"");
+								var outputClass = classStr + " " + prefix + "elem_ID_" + elemCount;
+								var repPatt = new RegExp( "class=(\"|')" + classStr );
+								cloneHTML = cloneHTML.replace( repPatt, "class='" + outputClass );
+								originalHTML = originalHTML.replace( repPatt, "class='" + outputClass );
+							}
+						});
+					} else {
+					
+						elemCount++;
+						cloneHTML = cloneHTML.replace(/>/, " class='" + prefix + "elem_ID_" + elemCount + "'>" );
+						originalHTML = originalHTML.replace(/>/, " class='" + prefix + "elem_ID_" + elemCount + "'>" );
+					
+					}
+					
+				});
+				
+				$(this)
+					.append(originalHTML)
+					.getClone()
+					.append(cloneHTML);
+								
+    		});
+    		
+    		return this;
+    		
+    	},
+    	
+    	// appendBoth() - Function to append elements to both original and clone containers. Returns target object.
+ 		prependBoth: function(html) {
+
+    		this.each(function() {
+				
+				var originalHTML = html;
+				var cloneHTML = html;
+				var tags = html.match(/<\w.*?>/gm);
+				
+				$.each( tags, function( i, tag ){
+					
+					var idAttrs = tag.match(/id=("|').*?("|')/);
+					
+					if ( idAttrs ) {
+						$.each( idAttrs, function( x, idAttr ){
+							
+							if ( /id=/.test(idAttr) ) {
+								var idStr = idAttr.replace(/id=("|')/,"").replace(/("|')/,"");
+								var outputID = idStr+prefix;
+								var repPatt = new RegExp( "id=(\"|')" + idStr );
+								cloneHTML = cloneHTML.replace( repPatt, "id='" + outputID );	
+							}
+						});
+					}
+					
+					var classAttrs = tag.match(/class=("|').*?("|')/);
+					
+					if ( classAttrs ) {
+						$.each( classAttrs, function( x, classAttr ){
+							
+							if ( /class=/.test(classAttr) ) {
+								elemCount++;
+								var classStr = classAttr.replace(/class=("|')/,"").replace(/("|')/,"");
+								var outputClass = classStr + " " + prefix + "elem_ID_" + elemCount;
+								var repPatt = new RegExp( "class=(\"|')" + classStr );
+								cloneHTML = cloneHTML.replace( repPatt, "class='" + outputClass );
+								originalHTML = originalHTML.replace( repPatt, "class='" + outputClass );
+							}
+						});
+					} else {
+					
+						elemCount++;
+						cloneHTML = cloneHTML.replace(/>/, " class='" + prefix + "elem_ID_" + elemCount + "'>" );
+						originalHTML = originalHTML.replace(/>/, " class='" + prefix + "elem_ID_" + elemCount + "'>" );
+					
+					}
+					
+				});
+				
+				$(this)
+					.prepend(originalHTML)
+					.getClone()
+					.prepend(cloneHTML);
+								
+    		});
+    		
+    		return this;
+    		
+    	},   	
     	
     	// isCalculated() - checks if the current element params have being calculated and pushed to stereoObjArr; 
  		isCalculated: function() {
@@ -326,7 +445,8 @@ function cloneContent() {
 	
 	// Marking all the content inside the Original and attaching specific #ids
 	
-	var elemCount = 0;
+	elemCount = 0;
+	
 	$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
 		$(this)
 			.addClass(prefix+"elem_ID_"+elemCount);
@@ -340,7 +460,7 @@ function cloneContent() {
 		.attr("id",prefix+"clone")
 		.appendTo("body");
 	
-	var elemCount = 0;
+	elemCount = 0;
 	
 	$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
 		$(this).addClass(prefix+"elem_ID_"+elemCount);

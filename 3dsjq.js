@@ -37,15 +37,15 @@ $.ajaxSetup({ cache: false }); // Prevents caching
 
 function go3DS( objArr, params ) {
 
-if ( objArr ) {
-	zPlaneShiftedObjs = objArr;
-}
-
-if ( params ) {
-	inputParams = params;
-}
-
-cloneContent();
+	if ( objArr ) {
+		zPlaneShiftedObjs = objArr;
+	}
+	
+	if ( params ) {
+		inputParams = params;
+	}
+	
+	cloneContent();
 
 }
 
@@ -56,8 +56,8 @@ cloneContent();
 // Function to get container width
 function getStereoContainerWidth() {
 
-var stereoContainerW = $(window).width()/2;
-return stereoContainerW;
+	var stereoContainerW = $(window).width()/2;
+	return stereoContainerW;
 
 }
 
@@ -500,410 +500,409 @@ function processInputHTMLstr( HTMLstr ) {
 
 
 // cloneContent.js
-
 // Cloning procedures
 
 function cloneContent() {
 
-console.log("cloning is started");
-
-// Vars
-
-bodyBack = $("body").css("background");
-initContent = $("body").html();
-
-// Splitting content into original and clone parts and applying styles
-
-$("html")
-	.css({ height: "100%" })
-	.find("body")
-	.css({ height: "100%" })
-	.wrapInner("<div id='"+prefix+"original' class='"+prefix+"split_part' /></div>");
-
-$("body")
-	.getOriginalContainer()
-	.wrapInner("<div class='"+prefix+"container'>");
-
-// Marking all the content inside the Original and attaching specific #ids
-
-elemCount = 0;
-
-$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
-	$(this)
-		.addClass(prefix+"elem_ID_"+elemCount);
-	elemCount++;
-});
-
-// Cloning
-
-$("body").getOriginalContainer()
-	.clone()
-	.attr("id",prefix+"clone")
-	.appendTo("body");
-
-elemCount = 0;
-
-$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
-	$(this).addClass(prefix+"elem_ID_"+elemCount);
-	elemCount++;
-});
-
-// Replacing id attributes inside the clone
-
-$("body").getCloneContainer().find("div [id]").each(function() {
-	var ID = $(this).attr("id");
-	var newID = ID+prefix;
-	$(this).attr("id",newID);
-});
-
-var method = inputParams.method;
-adjustSideBySide(method);
-
-console.log("cloning is complete");
-
-// Launching styles adaptation
-stylesAdaptation();
+	console.log("cloning is started");
+	
+	// Vars
+	
+	bodyBack = $("body").css("background");
+	initContent = $("body").html();
+	
+	// Splitting content into original and clone parts and applying styles
+	
+	$("html")
+		.css({ height: "100%" })
+		.find("body")
+		.css({ height: "100%" })
+		.wrapInner("<div id='"+prefix+"original' class='"+prefix+"split_part' /></div>");
+	
+	$("body")
+		.getOriginalContainer()
+		.wrapInner("<div class='"+prefix+"container'>");
+	
+	// Marking all the content inside the Original and attaching specific #ids
+	
+	elemCount = 0;
+	
+	$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
+		$(this).attr("class", prefix+"elem_ID_"+elemCount);
+		console.log($(this).attr("id")+" -- "+$(this).attr("class"));
+		elemCount++;
+	});
+	
+	// Cloning
+	
+	$("body").getOriginalContainer()
+		.clone()
+		.attr("id",prefix+"clone")
+		.appendTo("body");
+	
+	elemCount = 0;
+	
+	$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
+		$(this).attr("class", prefix+"elem_ID_"+elemCount);
+		elemCount++;
+	});
+	
+	// Replacing id attributes inside the clone
+	
+	$("body").getCloneContainer().find("div [id]").each(function() {
+		var ID = $(this).attr("id");
+		var newID = ID+prefix;
+		$(this).attr("id",newID);
+	});
+	
+	var method = inputParams.method;
+	adjustSideBySide(method);
+	
+	console.log("cloning is complete");
+	
+	// Launching styles adaptation
+	stylesAdaptation();
 
 }
 
 function adjustSideBySide(method) {
 
-var winW = $(window).width();
-var winH = $(window).height();
-var scrollW;
-var margin;
-
-if ( method && method == "top-to-bottom" ) {
+	var winW = $(window).width();
+	var winH = $(window).height();
+	var scrollW;
+	var margin;
 	
-	margin = (winH/4)*(-1);
-	
-	$("."+prefix+"split_part").css({
-		width: "100%",
-		height: winH/2,
-		position: "relative"
-	});
-	
-	$("."+prefix+"container").css({
-		width: "100%",
-		height: winH,
-		position: "absolute",
-		top: margin,
-		"-webkit-transform": "scaleY(0.5)",
-		"-moz-transform": "scaleY(0.5)",
-		"-ms-transform": "scaleY(0.5)",
-		"transform": "scaleY(0.5)"
-	});
-	
-} else {
-	
-	$("."+prefix+"split_part").css({
-		width: "50%",
-		height: "100%",
-		float: "left",
-		"background-size": "100% 100%",
-		"background-position": "center center",
-		"background-repeat": "no-repeat",
-		overflow: "hidden",
-		position: "relative"
-	});
-	
-	$("."+prefix+"container").css({
-		width: "50%",
-		minHeight: winH,
-		"-webkit-transform": "scaleX(0.5)",
-		"-moz-transform": "scaleX(0.5)",
-		"-ms-transform": "scaleX(0.5)",
-		"transform": "scaleX(0.5)"
-	});
-	
-	if ( $("body").getOriginalContainer().width() > $("body").getOriginalContainer().get(0).scrollWidth ) {
-		scrollW = $("body").getOriginalContainer().width() - $("body").getOriginalContainer().get(0).scrollWidth;
+	if ( method && method == "top-to-bottom" ) {
+		
+		margin = (winH/4)*(-1);
+		
+		$("."+prefix+"split_part").css({
+			width: "100%",
+			height: winH/2,
+			position: "relative"
+		});
+		
+		$("."+prefix+"container").css({
+			width: "100%",
+			height: winH,
+			position: "absolute",
+			top: margin,
+			"-webkit-transform": "scaleY(0.5)",
+			"-moz-transform": "scaleY(0.5)",
+			"-ms-transform": "scaleY(0.5)",
+			"transform": "scaleY(0.5)"
+		});
+		
 	} else {
-		scrollW = 0;
+		
+		$("."+prefix+"split_part").css({
+			width: "50%",
+			height: "100%",
+			float: "left",
+			"background-size": "100% 100%",
+			"background-position": "center center",
+			"background-repeat": "no-repeat",
+			overflow: "hidden",
+			position: "relative"
+		});
+		
+		$("."+prefix+"container").css({
+			width: "50%",
+			minHeight: winH,
+			"-webkit-transform": "scaleX(0.5)",
+			"-moz-transform": "scaleX(0.5)",
+			"-ms-transform": "scaleX(0.5)",
+			"transform": "scaleX(0.5)"
+		});
+		
+		if ( $("body").getOriginalContainer().width() > $("body").getOriginalContainer().get(0).scrollWidth ) {
+			scrollW = $("body").getOriginalContainer().width() - $("body").getOriginalContainer().get(0).scrollWidth;
+		} else {
+			scrollW = 0;
+		}
+		
+		margin = (winW/4)*(-1);
+		
+		$("."+prefix+"container")
+			.width(winW) // Fixing the window width in case of scroll
+			.css({ marginLeft: margin-scrollW }); // Fixing the scroll gap
+		
+		if ( $("body").getOriginalContainer().get(0).scrollHeight > $("body").getOriginalContainer().height() ) {
+		
+			$("body").getOriginalContainer().height( $("body").getOriginalContainer().get(0).scrollHeight );
+			$("body").getCloneContainer().height( $("body").getCloneContainer().get(0).scrollHeight );
+		
+		}
+		
 	}
 	
-	margin = (winW/4)*(-1);
+	// Applying body background on the stereo containers
 	
-	$("."+prefix+"container")
-		.width(winW) // Fixing the window width in case of scroll
-		.css({ marginLeft: margin-scrollW }); // Fixing the scroll gap
+	$("body").getOriginalContainer().css({ background: bodyBack });
+	$("body").getCloneContainer().css({ background: bodyBack });
 	
-	if ( $("body").getOriginalContainer().get(0).scrollHeight > $("body").getOriginalContainer().height() ) {
-	
-		$("body").getOriginalContainer().height( $("body").getOriginalContainer().get(0).scrollHeight );
-		$("body").getCloneContainer().height( $("body").getCloneContainer().get(0).scrollHeight );
-	
-	}
-	
+	// Reinitiating the procedure on window resize
+	 
+	$(window).on({
+		resize: function(){
+			adjustSideBySide(method);
+		}
+	});
+
 }
 
-// Applying body background on the stereo containers
-
-$("body").getOriginalContainer().css({ background: bodyBack });
-$("body").getCloneContainer().css({ background: bodyBack });
-
-// Reinitiating the procedure on window resize
- 
-$(window).on({
-	resize: function(){
-		adjustSideBySide(method);
-	}
-});
-
-}
 
 // stylesAdaptation.js
-
 // Parsing stylesheets
 
 function stylesAdaptation() {
 
-var stylesheetURLs = [];
-var stylesheetInlines = "";
-var curURL = window.location.href;
-
-console.log("adaptation is started");
-
-$("html")
-	.find("link[rel='stylesheet']")
-	.each(function(){
-		var styleURL = $(this).attr("href");
-		stylesheetURLs.push(styleURL);
-	});
-
-$("html")
-	.find("style")
-	.each(function(){
-		var stylesheetStr = $(this).html();
-		stylesheetInlines = stylesheetInlines + stylesheetStr;
-	});		
+	var stylesheetURLs = [];
+	var stylesheetInlines = "";
+	var curURL = window.location.href;
 	
-if ( stylesheetURLs !== "" ) {
-
-	$.each(stylesheetURLs, function(key, stylesheet){
+	console.log("adaptation is started");
 	
-		$.ajaxSetup({ cache: false }); // Prevents caching
-		
-		$.when($.get(stylesheet, "text")).done( function(response) {
-			
-			var inputCSS = response.toString();
-			buildCloneStylesheet(inputCSS);				
-		
-		}).fail( function(){
-		
-			console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
-		
+	$("html")
+		.find("link[rel='stylesheet']")
+		.each(function(){
+			var styleURL = $(this).attr("href");
+			stylesheetURLs.push(styleURL);
 		});
 	
-	});
+	$("html")
+		.find("style")
+		.each(function(){
+			var stylesheetStr = $(this).html();
+			stylesheetInlines = stylesheetInlines + stylesheetStr;
+		});		
+		
+	if ( stylesheetURLs !== "" ) {
 	
-	console.log("adaptation is complete");
+		$.each(stylesheetURLs, function(key, stylesheet){
+		
+			$.ajaxSetup({ cache: false }); // Prevents caching
+			
+			$.when($.get(stylesheet, "text")).done( function(response) {
+				
+				var inputCSS = response.toString();
+				buildCloneStylesheet(inputCSS);				
+			
+			}).fail( function(){
+			
+				console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
+			
+			});
+		
+		});
+		
+		console.log("adaptation is complete");
+		
+	}
 	
-}
-
-if ( stylesheetInlines !== "" ) { buildCloneStylesheet(stylesheetInlines); }
-
+	if ( stylesheetInlines !== "" ) { buildCloneStylesheet(stylesheetInlines); }
+	
 }
 
 function buildCloneStylesheet(inputCSS) {
 
-inputCSS = inputCSS.toString();
-inputCSS = inputCSS.replace(/[\t]|[\r\n]/gm," "); // Removing line breaks and tabs
-	
-var outputCSS = [];
-
-var fetchRules = new RegExp("}.[^}]*","gm");
-var rulesArr = inputCSS.match(fetchRules);		
-
-var outputRules;
-
-$.each(rulesArr, function(key, rule){
-	
-	var outputRule;
-	var newSel;
-	var selRepPatt;
-	var pushFlag = false;
-	
-	rule = rule.replace(/\}\s/, "").replace(/\/\*.*?\*\//, "").replace(/\s\s/, "") + "}";
-	
-	var selector = rule.replace(/\{.*\}/,"");
-	var selArr = selector.split(/,/);
-	var style = rule.replace(/^.[^{]*/,"");
-	
-	$.each(selArr, function(key, sel){
-	
-		var hoverCheck = /:hover/.test(sel);
-		var idCheck = /#/.test(sel);
-	
-		if ( hoverCheck || idCheck ) {
-			pushFlag = true;
-		}
+	inputCSS = inputCSS.toString();
+	inputCSS = inputCSS.replace(/[\t]|[\r\n]/gm," "); // Removing line breaks and tabs
 		
-		if ( hoverCheck ) {
-			hoverElemIDs.push( sel.replace(/:hover/, "") );
-			sel = sel.replace(/:hover/,".hover"+prefix);
-		}
+	var outputCSS = [];
+	
+	var fetchRules = new RegExp("}.[^}]*","gm");
+	var rulesArr = inputCSS.match(fetchRules);		
+	
+	var outputRules;
+	
+	$.each(rulesArr, function(key, rule){
 		
-		if ( idCheck ) {
+		var outputRule;
+		var newSel;
+		var selRepPatt;
+		var pushFlag = false;
+		
+		rule = rule.replace(/\}\s/, "").replace(/\/\*.*?\*\//, "").replace(/\s\s/, "") + "}";
+		
+		var selector = rule.replace(/\{.*\}/,"");
+		var selArr = selector.split(/,/);
+		var style = rule.replace(/^.[^{]*/,"");
+		
+		$.each(selArr, function(key, sel){
+		
+			var hoverCheck = /:hover/.test(sel);
+			var idCheck = /#/.test(sel);
+		
+			if ( hoverCheck || idCheck ) {
+				pushFlag = true;
+			}
 			
-			sel = sel.replace(/^\s*/,"");
-			var sArr = sel.split(/\s/);
+			if ( hoverCheck ) {
+				hoverElemIDs.push( sel.replace(/:hover/, "") );
+				sel = sel.replace(/:hover/,".hover"+prefix);
+			}
 			
-			$.each(sArr,function(k, s){
+			if ( idCheck ) {
 				
-				if ( /#/.test(s) ) {
+				sel = sel.replace(/^\s*/,"");
+				var sArr = sel.split(/\s/);
+				
+				$.each(sArr,function(k, s){
 					
-					if ( /\./.test(s) ) {
-						s = s.split(/\./);
-						s = s[0];
+					if ( /#/.test(s) ) {
+						
+						if ( /\./.test(s) ) {
+							s = s.split(/\./);
+							s = s[0];
+						}
+						
+						var repPatt = new RegExp(s, "g");
+						sel = sel.replace(repPatt, s+prefix); 
 					}
 					
-					var repPatt = new RegExp(s, "g");
-					sel = sel.replace(repPatt, s+prefix); 
-				}
+				});
 				
-			});
+				// Relative URLs fix
+				
+				if ( /\.\.\//.test(style) ) {
+					var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
+					style = style.replace(/\.\.\//g, urlPrefix+"/");
+				}
 			
-			// Relative URLs fix
-			
-			if ( /\.\.\//.test(style) ) {
-				var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
-				style = style.replace(/\.\.\//g, urlPrefix+"/");
 			}
-		
-		}
-		
-		if ( pushFlag === true ) {
-		
-			outputRule = sel+style;
-			outputCSS.push(outputRule);
 			
-		}
-		
+			if ( pushFlag === true ) {
+			
+				outputRule = sel+style;
+				outputCSS.push(outputRule);
+				
+			}
+			
+		});
+	
 	});
-
-});
-
-if ( outputCSS !== null ) {
-
-	$("<style type='text/css' />")
-		.html(outputCSS)
-		.prependTo($("body"));
-
-}
-
-// Building mirroring
-buildMirroring();
+	
+	if ( outputCSS !== null ) {
+	
+		$("<style type='text/css' />")
+			.html(outputCSS)
+			.prependTo($("body"));
+	
+	}
+	
+	// Building mirroring
+	buildMirroring();
 
 }
+
 
 // buildMirroring.js
-
 // Interaction mirroring procedures
 
 function buildMirroring() {
 
-buildHoverBindings(hoverElemIDs);
-buildScrollBindings();
-buildCursor();
-
-// Building zPlane
-buildZPlane();
+	buildHoverBindings(hoverElemIDs);
+	buildScrollBindings();
+	buildCursor();
+	
+	// Building zPlane
+	buildZPlane();
 
 }
 
 function buildHoverBindings(objs) {
 
-$.each(objs, function(key,obj){
-	obj = obj.replace(/:hover/, "");
-	var target = $(""+obj);
-	target.each(function(){
-		var clone = $(this).getClone();
-		$(this).on({
-			mouseenter: function(){
-				clone.addClass("hover"+prefix);
-			},
-				mouseleave: function(){
-				clone.removeClass("hover"+prefix);
-			}
+	$.each(objs, function(key,obj){
+		obj = obj.replace(/:hover/, "");
+		var target = $(""+obj);
+		target.each(function(){
+			var clone = $(this).getClone();
+			$(this).on({
+				mouseenter: function(){
+					clone.attr("class", "hover"+prefix);
+				},
+					mouseleave: function(){
+					clone.removeClass("hover"+prefix);
+				}
+			});
 		});
 	});
-});
 
 }
 
 function buildScrollBindings() {
 	
-$("body").getOriginalContainer().on({
-	scroll: function(){
-		var scrollTop = $(this).scrollTop();
-		$("body").getCloneContainer().scrollTop(scrollTop);
-	}
-});
+	$("body").getOriginalContainer().on({
+		scroll: function(){
+			var scrollTop = $(this).scrollTop();
+			$("body").getCloneContainer().scrollTop(scrollTop);
+		}
+	});
 
 }
 
 function buildCursor() {
 
-$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor'></div>");
-$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor'></div>");
-
-$("."+prefix+"cursor").css({
-	position: "absolute",
-	width: "5px",
-	height: "5px",
-	"border-radius":"256px",
-	background: "red",
-	top:0,
-	left: 0,
-	zIndex: 1000,
-	marginLeft: "5px",
-	marginTop: "5px"
-});
-
-// Hiding the default cursor
-$("body").find("*").css({ cursor: "none" });
+	$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor'></div>");
+	$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor'></div>");
 	
-var scrollDelta = 0;
-
-$("body").getOriginalContainer().on({
-	mousemove: function(e){
+	$("."+prefix+"cursor").css({
+		position: "absolute",
+		width: "5px",
+		height: "5px",
+		"border-radius":"256px",
+		background: "red",
+		top:0,
+		left: 0,
+		zIndex: 1000,
+		marginLeft: "5px",
+		marginTop: "5px"
+	});
 	
-		var winW = $(window).width();
-				
-		$("#"+prefix+"cursor_original").css({
-			top: e.pageY + scrollDelta,
-			left: e.pageX
-		});
-		$("#"+prefix+"cursor_clone").css({
-			top: e.pageY + scrollDelta,
-			left: e.pageX
-		});
-	},
-	scroll: function(e) {
+	// Hiding the default cursor
+	$("body").find("*").css({ cursor: "none" });
+		
+	var scrollDelta = 0;
 	
-		scrollDelta = $(this).scrollTop();			
+	$("body").getOriginalContainer().on({
+		mousemove: function(e){
+		
+			var winW = $(window).width();
+					
+			$("#"+prefix+"cursor_original").css({
+				top: e.pageY + scrollDelta,
+				left: e.pageX
+			});
+			$("#"+prefix+"cursor_clone").css({
+				top: e.pageY + scrollDelta,
+				left: e.pageX
+			});
+		},
+		scroll: function(e) {
+		
+			scrollDelta = $(this).scrollTop();			
+		
+		}
+	});
 	
-	}
-});
-
-$("."+prefix+"cursor").on({
-	mouseenter: function() {
-		$(this).css({
-			zIndex: 0
-		});
-	},
-	mouseleave: function(){
-		$(this).css({
-			zIndex: 10
-		});
-	}
-});
+	$("."+prefix+"cursor").on({
+		mouseenter: function() {
+			$(this).css({
+				zIndex: 0
+			});
+		},
+		mouseleave: function(){
+			$(this).css({
+				zIndex: 10
+			});
+		}
+	});
 
 }
 
-// build zPlane
 
+// build zPlane
 // Building zSpace
 
 function buildZPlane() {
@@ -1047,7 +1046,7 @@ function windowViolation(target,level) {
 
 function addLevelClass(target, level) {
 
-	target.getBoth().addClass(prefix+"level_"+level);
+	target.getBoth().attr("class", prefix+"level_"+level);
 
 }
 

@@ -1,34 +1,31 @@
 // Global vars
 
-var jsURLs = [];
-var zPlaneShiftedObjs = [];
-var inputParams = [];
-var prefix = "_3dsjq_";
-var stereoObjArr = [];
-var hoverElemIDs = [];
-var initContent;
-var bodyBack;
-
-var elemCount; // Counting number of elements in a markaup
-
-var zPlaneDefaultParams = {
-method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
-depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
-levels: 5,								// the maximum number of zPlanes						int
-visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
-scaleAmount: 10,						// amount of scaling in %s								int
-shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-shiftAnimDuration: 0.25					// animation duration in seconds						int
-};
-
-var zParams;
-var shiftLimit;
-var shiftStep;
-var shiftScale;
-var shiftAnim;
-var shiftMaxLvl;
-var sAD;
-var initsSA;
+var jsURLs = [],
+	zPlaneShiftedObjs = [],
+	inputParams = [],
+	prefix = "_3dsjq_",
+	stereoObjArr = [],
+	hoverElemIDs = [],
+	initContent,
+	bodyBack,
+	elemCount, // Counting number of elements in a markaup
+	zPlaneDefaultParams = {
+		method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
+		depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
+		levels: 5,								// the maximum number of zPlanes						int
+		visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
+		scaleAmount: 10,						// amount of scaling in %s								int
+		shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
+		shiftAnimDuration: 0.25					// animation duration in seconds						int
+	},
+	zParams,
+	shiftLimit,
+	shiftStep,
+	shiftScale,
+	shiftAnim,
+	shiftMaxLvl,
+	sAD,
+	initsSA;
 
 $.ajaxSetup({ cache: false }); // Prevents caching
 
@@ -196,7 +193,6 @@ $.fn.extend({
 			outputClass = $(this).getCountClass();
 			
 		});
-		
 		return $("." + outputClass);
 		
 	},
@@ -528,8 +524,8 @@ function cloneContent() {
 	elemCount = 0;
 	
 	$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
-		$(this).attr("class", prefix+"elem_ID_"+elemCount);
-		console.log($(this).attr("id")+" -- "+$(this).attr("class"));
+		var curClass = $(this).attr("class") + " ";
+		$(this).attr("class", curClass + prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
 	
@@ -543,7 +539,8 @@ function cloneContent() {
 	elemCount = 0;
 	
 	$("body").getCloneContainer().find("."+prefix+"container *").each(function(){
-		$(this).attr("class", prefix+"elem_ID_"+elemCount);
+		var curClass = $(this).attr("class") + " ";
+		$(this).attr("class", curClass + prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
 	
@@ -820,7 +817,8 @@ function buildHoverBindings(objs) {
 			var clone = $(this).getClone();
 			$(this).on({
 				mouseenter: function(){
-					clone.attr("class", "hover"+prefix);
+					var curClass = clone.attr("class") + " ";
+					clone.attr("class", curClass + "hover"+prefix);
 				},
 					mouseleave: function(){
 					clone.removeClass("hover"+prefix);
@@ -1045,8 +1043,8 @@ function windowViolation(target,level) {
 }
 
 function addLevelClass(target, level) {
-
-	target.getBoth().attr("class", prefix+"level_"+level);
+	var curClass = target.attr("class") + " ";
+	target.getBoth().attr("class", curClass + prefix+"level_"+level);
 
 }
 

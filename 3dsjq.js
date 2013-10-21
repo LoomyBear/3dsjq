@@ -1044,7 +1044,7 @@ function windowViolation(target,level) {
 
 function addLevelClass(target, level) {
 	var curClass = target.attr("class") + " ",
-		repPatt = new RegExp(prefix+"level_\\d*\\d?");
+		repPatt = new RegExp(prefix+"level_\d*\d?");
 	curClass = curClass.replace(repPatt, "");
 	target.getBoth().attr("class", curClass + prefix+"level_"+level);
 

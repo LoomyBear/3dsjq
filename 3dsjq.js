@@ -955,6 +955,29 @@ function buildZPlane() {
 				pseudoLvl = 0;	
 			}
 			
+			if ( shiftAnim === true ) {
+				
+				target.each(function(){
+					
+					var initAnim = $(this).css("transition-property"),
+						initAnimDur = $(this).css("transition-duration");
+					
+					console.log( initAnim );
+					
+					$(this)
+						.getBoth()
+						.css({
+							"-webkit-transition-property" : initAnim+", margin, -webkit-transform",
+							"-webkit-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
+							"-moz-transition-property" : initAnim+", margin, -moz-transform",
+							"-moz-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
+							"transition-property" : initAnim+", margin, transform",
+							"transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s"
+						});					
+				});
+			
+			}
+			
 			buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl );
 			zPlaneDisplace(target);
 		
@@ -1066,30 +1089,6 @@ function zPlaneShifter(target, level, initML, initMR) {
 	
 	var targetClone = target.getClone(),
 		wViolation = windowViolation(target, level);
-	
-	if ( shiftAnim === true ) {
-	
-		var initAnim = target.css("-webkit-transition-property"),
-			initAnimDur = target.css("-webkit-transition-duration");
-	
-		target.css({
-			"-webkit-transition-property" : initAnim+", margin, -webkit-transform",
-			"-webkit-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-			"-moz-transition-property" : initAnim+", margin, -moz-transform",
-			"-moz-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-			"transition-property" : initAnim+", margin, transform",
-			"transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s"
-		});
-		targetClone.css({
-			"-webkit-transition-property" : initAnim+", margin, -webkit-transform",
-			"-webkit-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-			"-moz-transition-property" : initAnim+", margin, -moz-transform",
-			"-moz-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-			"transition-property" : initAnim+", margin, transform",
-			"transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s"
-		});
-	
-	}
 		
 	var tW = target.width(),
 		tH = target.height(),
@@ -1133,18 +1132,13 @@ function zPlaneShifter(target, level, initML, initMR) {
 	}
 	
 	if ( shiftScale === true && sSA !== 0 /*&& tPseudo*/ ) {			
-		target.css({
-			"-webkit-transform" : "scale("+sSA+")",
-			"-moz-transform" : "scale("+sSA+")",
-			"transform" : "scale("+sSA+")"
-		});
-		targetClone.css({
-			"-webkit-transform" : "scale("+sSA+")",
-			"-moz-transform" : "scale("+sSA+")",
-			"transform" : "scale("+sSA+")"
-		});
+		target
+			.getBoth()
+			.css({
+				"-webkit-transform" : "scale("+sSA+")",
+				"-moz-transform" : "scale("+sSA+")",
+				"transform" : "scale("+sSA+")"
+			});
 	}
 
 }
-
-

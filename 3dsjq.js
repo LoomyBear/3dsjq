@@ -61,10 +61,10 @@ function getStereoContainerWidth() {
 // Function to get the class containing the current depth level
 function getLevelClass(target) {
 	
-	var levelClass = "";
-	var targetClass = target.attr("class");
-	var classes = targetClass.split(" ");
-	var patt = new RegExp(prefix+"level_", "g");
+	var levelClass = "",
+		targetClass = target.attr("class"),
+		classes = targetClass.split(" "),
+		patt = new RegExp(prefix+"level_", "g");
 				
 	$.each(classes, function(key, val) {
 		if ( patt.test(val) ) {
@@ -85,13 +85,14 @@ function buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl ) {
 
 	target.each(function(){
 	
-		if ( $(this).isCalculated() === false ) {
+		if ( !$(this).isCalculated() && $(this).isOriginal() ) {
 			
-			var tML = parseInt($(this).css("margin-left"), 10);
-			var tMR = parseInt($(this).css("margin-right"), 10);
-			var objZID = $(this).getElementID();
+			var tML = parseInt($(this).css("margin-left"), 10),
+				tMR = parseInt($(this).css("margin-right"), 10),
+				objZID = $(this).getElementID(),
+				initZInd = parseInt($(this).css("z-index"),10) || 0;
 			
-			var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR);
+			var obj = buildArray(objID, objZID, objPseudo, initLvl,  pseudoLvl, tML, tMR, initZInd);
 			stereoObjArr.push(obj);
 		
 		}
@@ -102,7 +103,7 @@ function buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl ) {
 
 // Function to builld array of data for each element for S3D conversion
 
-function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR) {
+function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR, initZInd) {
 	return {
 		objID: objID,
 		objZID: objZID,
@@ -110,7 +111,8 @@ function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR
 		initLvl: initLvl,
 		pseudoLvl: pseudoLvl,
 		initML: initML,
-		initMR: initMR
+		initMR: initMR,
+		initZInd: initZInd
 	};
 }
 
@@ -165,6 +167,57 @@ $.fn.extend({
 		});
 		
 		return outputClass;
+		
+	},		
+	
+	// isCalculated() - checks if the current element params have being calculated and pushed to stereoObjArr; 
+	isCalculated: function() {
+		
+		var isCalculated = false;
+		
+		this.each(function() {
+			
+			var tID = $(this).getElementID();
+			
+			$.each(stereoObjArr, function(key, arr){
+				if( arr.objZID == tID ) {
+					isCalculated = true;
+				}
+			});
+			
+		});
+		
+		return isCalculated;
+		
+	},
+	
+	// isOriginal() - function to check if an element is inside the original container. Returns boolean value;
+	isOriginal: function(){
+		
+		var output = false;
+		
+		this.each(function(){
+			
+			output = $(this).closest("#"+prefix+"original").length > 0;
+			
+		});
+		
+		return output;
+		
+	},
+	
+	// isClone() - function to check if an element is inside the clone container. Returns boolean value;
+	isClone: function(){
+		
+		var output = false;
+		
+		this.each(function(){
+			
+			output = $(this).closest("#"+prefix+"original").length > 0;
+			
+		});
+		
+		return output;
 		
 	},
 	
@@ -354,66 +407,56 @@ $.fn.extend({
 		
 		return this;
 		
-	},		
-	
-	// isCalculated() - checks if the current element params have being calculated and pushed to stereoObjArr; 
-	isCalculated: function() {
-		
-		var isCalculated = false;
-		
-		this.each(function() {
-			
-			var tID = $(this).getElementID();
-			
-			$.each(stereoObjArr, function(key, arr){
-				if( arr.objZID == tID ) {
-					isCalculated = true;
-				}
-			});
-			
-		});
-		
-		return isCalculated;
-		
 	},
 	
-	// shift(level) - Function to shift elements in the zPlane. Returns the target item.
+	// shift(level) - Function to shift elements in the zPlane. Returns the targeted item.
 	shift: function(level) {
+		
+		var output;
 		
 		this.each(function() {
 			
-			if ( level !== undefined && $(this).parents("#"+prefix+"original").length > 0 ) {
+			if ( level !== undefined && $(this).isOriginal() ) {
 				
-				var targetClass = $(this).attr("class");
-				var classes = targetClass.split(" ");
-				var oID = $("body").getOriginalContainer().attr("id");
-				var selector = "#"+oID+" ";
+				var targetClass = $(this).attr("class"),
+					classes = targetClass.split(" "),
+					oID = $("body").getOriginalContainer().attr("id"),
+					selector = "#"+oID+" ";
+					
+					$.each(classes, function(key, val) {
+						selector = selector+"."+val;
+					});
+					
+					var target = $(""+selector);
 				
-				$.each(classes, function(key, val) {
-					selector = selector+"."+val;
-				});
-				
-				var target = $(""+selector);
-				buildObjParamArr( target, selector, 0, 0, 0 );
+				if ( !$(this).isCalculated() ) {
+					
+					var initZInd = parseInt($(this).css("z-index"),10) || 0;
+					buildObjParamArr( target, selector, 0, 0, 0, initZInd );
+
+				}
 				
 				$.each(stereoObjArr, function(key, obj){
 	
 					if ( obj.objZID == target.getElementID() ) {
 					
-						var initML = obj.initML;
-						var initMR = obj.initMR;
-					
-						zPlaneShifter(target, level, initML, initMR);
+						var initML = obj.initML,
+							initMR = obj.initMR,
+							initZInd = obj.initZInd;
+							
+						zPlaneShifter(target, level, initML, initMR, initZInd);
 					
 					}
 				
 				});
-
+					
+				output = $(this);
+				
 			}
 	
 		});
-					
-		return this;
+		
+		return output;
 	
 	},
 	
@@ -524,7 +567,10 @@ function cloneContent() {
 	elemCount = 0;
 	
 	$("body").getOriginalContainer().find("."+prefix+"container *").each(function(){
-		var curClass = $(this).attr("class") + " ";
+		var curClass = "";
+		if ( $(this).attr("class") ) {
+			curClass = $(this).attr("class") + " ";
+		}
 		$(this).attr("class", curClass + prefix+"elem_ID_"+elemCount);
 		elemCount++;
 	});
@@ -959,21 +1005,23 @@ function buildZPlane() {
 				
 				target.each(function(){
 					
-					var initAnim = $(this).css("transition-property"),
-						initAnimDur = $(this).css("transition-duration");
+					if ( $(this).isOriginal() ) {
 					
-					console.log( initAnim );
+						var initAnim = $(this).css("transition-property"),
+							initAnimDur = $(this).css("transition-duration");
+						
+						$(this)
+							.getBoth()
+							.css({
+								"-webkit-transition-property" : initAnim+", margin, -webkit-transform",
+								"-webkit-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
+								"-moz-transition-property" : initAnim+", margin, -moz-transform",
+								"-moz-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
+								"transition-property" : initAnim+", margin, transform",
+								"transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s"
+							});
+					}
 					
-					$(this)
-						.getBoth()
-						.css({
-							"-webkit-transition-property" : initAnim+", margin, -webkit-transform",
-							"-webkit-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-							"-moz-transition-property" : initAnim+", margin, -moz-transform",
-							"-moz-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-							"transition-property" : initAnim+", margin, transform",
-							"transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s"
-						});					
 				});
 			
 			}
@@ -991,52 +1039,41 @@ function buildZPlane() {
 
 function zPlaneDisplace(target) {
 
-	var tPseudo;
-	var initML;
-	var initMR;
-	var initLvl;
-	var pseudoLvl;
+	var tPseudo,
+		initML,
+		initMR,
+		initLvl,
+		pseudoLvl,
+		initZInd;
 	
 	$.each(stereoObjArr, function(key, obj){
 		
 		if ( obj.objZID == target.getElementID() ) {			
-			tPseudo = obj.objPseudo;
-			initML = obj.initML;
-			initMR = obj.initMR;
-			initLvl = obj.initLvl;
-			pseudoLvl = obj.pseudoLvl;
+			tPseudo = obj.objPseudo,
+			initML = obj.initML,
+			initMR = obj.initMR,
+			initLvl = obj.initLvl,
+			pseudoLvl = obj.pseudoLvl,
+			initZInd = obj.initZInd;
 		}
 		
 	});
 	
 	if ( tPseudo == "hover" ) {
 		
-		var tInitZ;
-		var tParentInitZ;
-		
 		target.on({
 			mouseenter: function(){
-				tInitZ = $(this).css("z-index");
-				tParentInitZ = $(this).parent().css("z-index");
-				$(this)
-					.css({ zIndex: 1000 })
-					.parent()
-					.css({ zIndex: 1000 });
-				zPlaneShifter($(this), pseudoLvl, initML, initMR);
+				zPlaneShifter($(this), pseudoLvl, initML, initMR, initZInd);
 			},
 			mouseleave: function(){
-				$(this)
-					.css({ zIndex: tInitZ })
-					.parent()
-					.css({ zIndex: tParentInitZ });
-				zPlaneShifter($(this), initLvl, initML, initMR);
+				zPlaneShifter($(this), initLvl, initML, initMR, initZInd);
 			}
 		});
 		
 	} else {
 	
 		target.each(function(){
-			zPlaneShifter($(this), initLvl, initML, initMR);	
+			zPlaneShifter($(this), initLvl, initML, initMR, initZInd);	
 		});
 		
 	}
@@ -1080,7 +1117,7 @@ function removeLevelClass(target) {
 
 }
 
-function zPlaneShifter(target, level, initML, initMR) {
+function zPlaneShifter(target, level, initML, initMR, initZInd) {
 
 	initML = parseInt(initML, 10),
 	initMR = parseInt(initMR, 10);
@@ -1124,12 +1161,26 @@ function zPlaneShifter(target, level, initML, initMR) {
 		marginLeft: deltaCloneLeft,
 		marginRight: deltaCloneRight
 	});
-			
+		
 	if ( level === 0 ) {
+	
 		removeLevelClass(target, level);
+	
 	} else {
 		addLevelClass(target, level);
 	}
+	
+	// Introducing zIndexes for shifted elements
+	target.each(function(){
+		if ( $(this).isOriginal() ) {
+			$(this)
+				.getBoth()
+				.css({
+					zIndex : initZInd + $(this).getLevel()
+				});
+		}
+	
+	});
 	
 	if ( shiftScale === true && sSA !== 0 /*&& tPseudo*/ ) {			
 		target

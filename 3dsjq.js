@@ -449,14 +449,12 @@ $.fn.extend({
 					}
 				
 				});
-					
-				output = $(this);
 				
 			}
 	
 		});
 		
-		return output;
+		return this;
 	
 	},
 	

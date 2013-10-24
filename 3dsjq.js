@@ -50,6 +50,20 @@ function go3DS( objArr, params ) {
 
 // functions.js
 
+// Function to get original container. Returns original container object.
+function getOriginalContainer(){
+
+	return $("#"+prefix+"original");
+
+}
+
+// Function to get clone container. Returns clone container object.
+function getCloneContainer(){
+
+	return $("#"+prefix+"original");
+
+}
+
 // Function to get container width
 function getStereoContainerWidth() {
 
@@ -102,7 +116,6 @@ function buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl ) {
 }
 
 // Function to builld array of data for each element for S3D conversion
-
 function buildArray(objID, objZID, objPseudo, initLvl, pseudoLvl, initML, initMR, initZInd) {
 	return {
 		objID: objID,
@@ -266,11 +279,11 @@ $.fn.extend({
 	// appendBoth() - Function to append elements to both original and clone containers. Returns target object.
 	appendBoth: function(html) {
 		
-		var processedHTML;
-		var originalHTML;
-		var cloneHTML;
-		var thisL = this.length;
-		var c = 0;
+		var processedHTML,
+			originalHTML,
+			cloneHTML,
+			thisL = this.length,
+			c = 0;
 		
 		this.each(function() {
 					
@@ -303,11 +316,11 @@ $.fn.extend({
 	// appendBoth() - Function to prepend elements to both original and clone containers. Returns target object.
 	prependBoth: function(html) {
 		
-		var processedHTML;
-		var originalHTML;
-		var cloneHTML;
-		var thisL = this.length;
-		var c = 0;
+		var processedHTML,
+			originalHTML,
+			cloneHTML,
+			thisL = this.length,
+			c = 0;
 		
 		this.each(function() {
 					
@@ -340,11 +353,12 @@ $.fn.extend({
 	// beforeBoth() - Function to inject elements before a target to both original and clone containers. Returns target object.
 	beforeBoth: function(html) {
 		
-		var processedHTML;
-		var originalHTML;
-		var cloneHTML;
-		var thisL = this.length;
-		var c = 0;
+		var processedHTML,
+			originalHTML,
+			cloneHTML,
+			thisL = this.length,
+			c = 0;
+			
 		this.each(function() {
 												
 			c++;
@@ -376,11 +390,12 @@ $.fn.extend({
 	// afterBoth() - Function to inject elements after a target to both original and clone containers. Returns target object.
 	afterBoth: function(html) {
 		
-		var processedHTML;
-		var originalHTML;
-		var cloneHTML;
-		var thisL = this.length;
-		var c = 0;
+		var processedHTML,
+			originalHTML,
+			cloneHTML,
+			thisL = this.length,
+			c = 0;
+			
 		this.each(function() {
 												
 			c++;
@@ -465,8 +480,8 @@ $.fn.extend({
 		
 		this.each(function() {
 			
-			var levelClass = getLevelClass($(this));
-			var patt = new RegExp(prefix+"level_","g");
+			var levelClass = getLevelClass($(this)),
+				patt = new RegExp(prefix+"level_","g");
 			
 			if ( levelClass !== 0 ) {
 				level = parseInt(levelClass.replace(patt, ""), 10);
@@ -608,10 +623,10 @@ function cloneContent() {
 
 function adjustSideBySide(method) {
 
-	var winW = $(window).width();
-	var winH = $(window).height();
-	var scrollW;
-	var margin;
+	var winW = $(window).width(),
+		winH = $(window).height(),
+		scrollW,
+		zmargin;
 	
 	if ( method && method == "top-to-bottom" ) {
 		
@@ -1101,8 +1116,10 @@ function windowViolation(target,level) {
 }
 
 function addLevelClass(target, level) {
+	
 	var curClass = target.attr("class") + " ",
-		repPatt = new RegExp(prefix+"level_\d*\d?");
+		repPatt = new RegExp(prefix+"level_.*");
+	console.log(repPatt);
 	curClass = curClass.replace(repPatt, "");
 	target.getBoth().attr("class", curClass + prefix+"level_"+level);
 
@@ -1111,7 +1128,9 @@ function addLevelClass(target, level) {
 function removeLevelClass(target) {
 
 	var levelClass = getLevelClass(target);
-	target.getBoth().removeClass(levelClass);
+	target
+		.getBoth()
+		.removeClass(levelClass);
 
 }
 

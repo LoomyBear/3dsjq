@@ -25,7 +25,9 @@ var jsURLs = [],
 	shiftAnim,
 	shiftMaxLvl,
 	sAD,
-	initsSA;
+	initsSA,
+	winW,
+	winH;
 
 $.ajaxSetup({ cache: false }); // Prevents caching
 
@@ -33,6 +35,9 @@ $.ajaxSetup({ cache: false }); // Prevents caching
 // Initialization
 
 function go3DS( objArr, params ) {
+
+	winW = $(window).width(),
+	winH = $(window).height();
 
 	if ( objArr ) {
 		zPlaneShiftedObjs = objArr;
@@ -622,11 +627,6 @@ function cloneContent() {
 }
 
 function adjustSideBySide(method) {
-
-	var winW = $(window).width(),
-		winH = $(window).height(),
-		scrollW,
-		zmargin;
 	
 	if ( method && method == "top-to-bottom" ) {
 		
@@ -671,14 +671,13 @@ function adjustSideBySide(method) {
 			"transform": "scaleX(0.5)"
 		});
 		
-		if ( $("body").getOriginalContainer().width() > $("body").getOriginalContainer().get(0).scrollWidth ) {
+		if ( $("body").getOriginalContainer().width() >= $("body").getOriginalContainer().get(0).scrollWidth ) {
 			scrollW = $("body").getOriginalContainer().width() - $("body").getOriginalContainer().get(0).scrollWidth;
 		} else {
 			scrollW = 0;
 		}
 		
 		margin = (winW/4)*(-1);
-		
 		$("."+prefix+"container")
 			.width(winW) // Fixing the window width in case of scroll
 			.css({ marginLeft: margin-scrollW }); // Fixing the scroll gap
@@ -701,6 +700,8 @@ function adjustSideBySide(method) {
 	 
 	$(window).on({
 		resize: function(){
+			winW = $(window).width(),
+			winH = $(window).height();
 			adjustSideBySide(method);
 		}
 	});

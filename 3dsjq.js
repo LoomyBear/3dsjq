@@ -15,19 +15,16 @@ var jsURLs = [],
 		levels: 5,								// the maximum number of zPlanes						int
 		visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
 		scaleAmount: 10,						// amount of scaling in %s								int
-		shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-		shiftAnimDuration: 0.25					// animation duration in seconds						int
 	},
 	zParams,
 	shiftLimit,
 	shiftStep,
 	shiftScale,
-	shiftAnim,
 	shiftMaxLvl,
-	sAD,
 	initsSA,
 	winW,
-	winH;
+	winH,
+	initDocH;
 
 $.ajaxSetup({ cache: false }); // Prevents caching
 
@@ -565,8 +562,9 @@ function cloneContent() {
 	
 	// Vars
 	
-	bodyBack = $("body").css("background");
-	initContent = $("body").html();
+	bodyBack = $("body").css("background"),
+	initContent = $("body").html(),
+	initDocH = $(document).height();
 	
 	// Splitting content into original and clone parts and applying styles
 	
@@ -667,25 +665,29 @@ function adjustSideBySide(method) {
 			minHeight: winH,
 			"-webkit-transform": "scaleX(0.5)",
 			"-moz-transform": "scaleX(0.5)",
-			"-ms-transform": "scaleX(0.5)",
+			"-ms-transform": "scaleX(0.5)",	
 			"transform": "scaleX(0.5)"
 		});
 		
-		if ( $("body").getOriginalContainer().width() >= $("body").getOriginalContainer().get(0).scrollWidth ) {
-			scrollW = $("body").getOriginalContainer().width() - $("body").getOriginalContainer().get(0).scrollWidth;
-		} else {
-			scrollW = 0;
+		if ( $("body").getOriginalContainer().get(0).scrollWidth ) {
+		
+			if ( $("body").getOriginalContainer().width() >= $("body").getOriginalContainer().get(0).scrollWidth ) {
+				scrollW = $("body").getOriginalContainer().width() - $("body").getOriginalContainer().get(0).scrollWidth;
+			} else {
+				scrollW = 0;
+			}
+		
 		}
 		
 		margin = (winW/4)*(-1);
 		$("."+prefix+"container")
 			.width(winW) // Fixing the window width in case of scroll
 			.css({ marginLeft: margin-scrollW }); // Fixing the scroll gap
+			
+		if ( initDocH > $("body").getOriginalContainer().height() ) {
 		
-		if ( $("body").getOriginalContainer().get(0).scrollHeight > $("body").getOriginalContainer().height() ) {
-		
-			$("body").getOriginalContainer().height( $("body").getOriginalContainer().get(0).scrollHeight );
-			$("body").getCloneContainer().height( $("body").getCloneContainer().get(0).scrollHeight );
+			$("body").getOriginalContainer().height( initDocH );
+			$("body").getCloneContainer().height( initDocH );
 		
 		}
 		
@@ -736,14 +738,26 @@ function stylesAdaptation() {
 		
 	if ( stylesheetURLs !== "" ) {
 	
+		var done = false;
+		
 		$.each(stylesheetURLs, function(key, stylesheet){
 		
-			$.ajaxSetup({ cache: false }); // Prevents caching
+			$.ajaxSetup({ cache: false, async: false }); // Prevents caching
 			
 			$.when($.get(stylesheet, "text")).done( function(response) {
 				
 				var inputCSS = response.toString();
-				buildCloneStylesheet(inputCSS);				
+				buildCloneStylesheet(inputCSS);
+				
+				if ( key+1 == stylesheetURLs.length ) {
+					done = true;
+					
+					// Building mirroring
+					buildMirroring();
+					
+					console.log("adaptation is complete");
+				
+				}
 			
 			}).fail( function(){
 			
@@ -752,8 +766,6 @@ function stylesAdaptation() {
 			});
 		
 		});
-		
-		console.log("adaptation is complete");
 		
 	}
 	
@@ -780,7 +792,7 @@ function buildCloneStylesheet(inputCSS) {
 		var selRepPatt;
 		var pushFlag = false;
 		
-		rule = rule.replace(/\}\s/, "").replace(/\/\*.*?\*\//, "").replace(/\s\s/, "") + "}";
+		rule = rule.replace(/(\}\*\/)|(\}\s)|(\/\*.*?\*\/)|(\s\s)/, "") + "}";
 		
 		var selector = rule.replace(/\{.*\}/,"");
 		var selArr = selector.split(/,/);
@@ -815,7 +827,7 @@ function buildCloneStylesheet(inputCSS) {
 						}
 						
 						var repPatt = new RegExp(s, "g");
-						sel = sel.replace(repPatt, s+prefix); 
+						sel = sel.replace(repPatt, s+prefix);
 					}
 					
 				});
@@ -847,9 +859,6 @@ function buildCloneStylesheet(inputCSS) {
 			.prependTo($("body"));
 	
 	}
-	
-	// Building mirroring
-	buildMirroring();
 
 }
 
@@ -869,7 +878,6 @@ function buildMirroring() {
 }
 
 function buildHoverBindings(objs) {
-
 	$.each(objs, function(key,obj){
 		obj = obj.replace(/:hover/, "");
 		var target = $(""+obj);
@@ -986,9 +994,7 @@ function buildZPlane() {
 	shiftStep = Math.round(shiftLimit/zParams.levels);
 	
 	shiftScale = zParams.visualCues;
-	shiftAnim = zParams.shiftAnim;
 	shiftMaxLvl = zParams.levels;
-	sAD = zParams.shiftAnimDuration;
 	initsSA = zParams.scaleAmount;
 	
 	if ( zPlaneShiftedObjs !== null ) {	
@@ -1013,31 +1019,6 @@ function buildZPlane() {
 			} else {
 				initLvl = level;
 				pseudoLvl = 0;	
-			}
-			
-			if ( shiftAnim === true ) {
-				
-				target.each(function(){
-					
-					if ( $(this).isOriginal() ) {
-					
-						var initAnim = $(this).css("transition-property"),
-							initAnimDur = $(this).css("transition-duration");
-						
-						$(this)
-							.getBoth()
-							.css({
-								"-webkit-transition-property" : initAnim+", margin, -webkit-transform",
-								"-webkit-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-								"-moz-transition-property" : initAnim+", margin, -moz-transform",
-								"-moz-transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s",
-								"transition-property" : initAnim+", margin, transform",
-								"transition-duration" : initAnimDur+", " +sAD+"s, " +sAD+"s"
-							});
-					}
-					
-				});
-			
 			}
 			
 			buildObjParamArr( target, objID, objPseudo, initLvl, pseudoLvl );
@@ -1120,7 +1101,6 @@ function addLevelClass(target, level) {
 	
 	var curClass = target.attr("class") + " ",
 		repPatt = new RegExp(prefix+"level_.*");
-	console.log(repPatt);
 	curClass = curClass.replace(repPatt, "");
 	target.getBoth().attr("class", curClass + prefix+"level_"+level);
 

@@ -8,6 +8,7 @@ var jsURLs = [],
 	hoverElemIDs = [],
 	initContent,
 	bodyBack,
+	bodyInitHeight,
 	elemCount, // Counting number of elements in a markaup
 	zPlaneDefaultParams = {
 		method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
@@ -15,12 +16,16 @@ var jsURLs = [],
 		levels: 5,								// the maximum number of zPlanes						int
 		visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
 		scaleAmount: 10,						// amount of scaling in %s								int
+		shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
+		shiftAnimDuration: 0.25					// animation duration in seconds						int
 	},
 	zParams,
 	shiftLimit,
 	shiftStep,
 	shiftScale,
+	shiftAnim,
 	shiftMaxLvl,
+	sAD,
 	initsSA,
 	winW,
 	winH,
@@ -564,7 +569,8 @@ function cloneContent() {
 	
 	bodyBack = $("body").css("background"),
 	initContent = $("body").html(),
-	initDocH = $(document).height();
+	initDocH = $(document).height(),
+	bodyInitHeight = $("body").outerHeight();
 	
 	// Splitting content into original and clone parts and applying styles
 	
@@ -662,7 +668,7 @@ function adjustSideBySide(method) {
 		
 		$("."+prefix+"container").css({
 			width: "50%",
-			minHeight: winH,
+			height: bodyInitHeight,
 			"-webkit-transform": "scaleX(0.5)",
 			"-moz-transform": "scaleX(0.5)",
 			"-ms-transform": "scaleX(0.5)",	
@@ -994,7 +1000,9 @@ function buildZPlane() {
 	shiftStep = Math.round(shiftLimit/zParams.levels);
 	
 	shiftScale = zParams.visualCues;
+	shiftAnim = zParams.shiftAnim;
 	shiftMaxLvl = zParams.levels;
+	sAD = zParams.shiftAnimDuration;
 	initsSA = zParams.scaleAmount;
 	
 	if ( zPlaneShiftedObjs !== null ) {	

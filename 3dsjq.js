@@ -747,29 +747,39 @@ function stylesAdaptation() {
 		var done = false;
 		
 		$.each(stylesheetURLs, function(key, stylesheet){
-		
-			$.ajaxSetup({ cache: false, async: false }); // Prevents caching
 			
-			$.when($.get(stylesheet, "text")).done( function(response) {
+			var extCSS = stylesheet.match(/^http\:\/\//);
+			if ( !extCSS ) {
+			
+				$.ajaxSetup({ cache: false, async: false }); // Prevents caching
 				
-				var inputCSS = response.toString();
-				buildCloneStylesheet(inputCSS);
 				
-				if ( key+1 == stylesheetURLs.length ) {
-					done = true;
+				$.when($.get(stylesheet, "text")).done( function(response) {
 					
-					// Building mirroring
-					buildMirroring();
+					var inputCSS = response.toString();
+					buildCloneStylesheet(inputCSS);
 					
-					console.log("adaptation is complete");
+					if ( key+1 == stylesheetURLs.length ) {
+						done = true;
+						
+						// Building mirroring
+						buildMirroring();
+						
+						console.log("adaptation is complete");
+					
+					}
 				
-				}
+				}).fail( function(){
+				
+					console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
+				
+				});
 			
-			}).fail( function(){
+			} else {
 			
-				console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
+				console.warn( "3DSjQ warning: External stylesheet " + stylesheet + " was bypassed in order to avoid security restrictions." );
 			
-			});
+			}
 		
 		});
 		

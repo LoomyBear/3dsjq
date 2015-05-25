@@ -1,3 +1,14 @@
+// Edits 08.04.2015 
+
+// 1. Added stereoIsOn - global variable to indicate if the library is running
+// 2. Variables definition levelled all over the library
+// 3. Fixed issue with multiple ids within a single selector
+
+// Edits 25.05.2015
+
+// 1. Fixed the issue with background stretching for original and clone containers
+// 2. Added the _3dsjq_ class to the body
+
 // Global vars
 
 var jsURLs = [],
@@ -174,9 +185,9 @@ $.fn.extend({
 		
 		this.each(function(){
 			
-			var targetClass = $(this).attr("class");
-			var classes = targetClass.split(" ");
-			var patt = new RegExp(prefix+"elem_ID_", "g");
+			var targetClass = $(this).attr("class"),
+				classes = targetClass.split(" "),
+				patt = new RegExp(prefix+"elem_ID_", "g");
 			
 			$.each(classes, function(key, val) {
 				if ( patt.test(val) ) {
@@ -509,9 +520,9 @@ $.fn.extend({
 // Function to process HTML string before insertion into HTML
 function processInputHTMLstr( HTMLstr ) {
 
-	var originalHTML = HTMLstr;
-	var cloneHTML = HTMLstr;
-	var tags = HTMLstr.match(/<\w.*?>/gm);
+	var originalHTML = HTMLstr,
+		cloneHTML = HTMLstr,
+		tags = HTMLstr.match(/<\w.*?>/gm);
 	
 	$.each( tags, function( i, tag ){
 						
@@ -521,9 +532,9 @@ function processInputHTMLstr( HTMLstr ) {
 			$.each( idAttrs, function( x, idAttr ){
 				
 				if ( /id=/.test(idAttr) ) {
-					var idStr = idAttr.replace(/id=("|')/,"").replace(/("|')/,"");
-					var outputID = idStr+prefix;
-					var repPatt = new RegExp( "id=(\"|')" + idStr );
+					var idStr = idAttr.replace(/id=("|')/,"").replace(/("|')/,""),
+						outputID = idStr+prefix,
+						repPatt = new RegExp( "id=(\"|')" + idStr );
 					cloneHTML = cloneHTML.replace( repPatt, "id='" + outputID );	
 				}
 			});
@@ -536,9 +547,9 @@ function processInputHTMLstr( HTMLstr ) {
 				
 				if ( /class=/.test(classAttr) ) {
 					elemCount++;
-					var classStr = classAttr.replace(/class=("|')/,"").replace(/("|')/,"");
-					var outputClass = classStr + " " + prefix + "elem_ID_" + elemCount;
-					var repPatt = new RegExp( "class=(\"|')" + classStr );
+					var classStr = classAttr.replace(/class=("|')/,"").replace(/("|')/,""),
+						outputClass = classStr + " " + prefix + "elem_ID_" + elemCount,
+						repPatt = new RegExp( "class=(\"|')" + classStr );
 					cloneHTML = cloneHTML.replace( repPatt, "class='" + outputClass );
 					originalHTML = originalHTML.replace( repPatt, "class='" + outputClass );
 				}
@@ -615,8 +626,8 @@ function cloneContent() {
 	// Replacing id attributes inside the clone
 	
 	$("body").getCloneContainer().find("div [id]").each(function() {
-		var ID = $(this).attr("id");
-		var newID = ID+prefix;
+		var ID = $(this).attr("id"),
+			newID = ID+prefix;
 		$(this).attr("id",newID);
 	});
 	
@@ -701,8 +712,9 @@ function adjustSideBySide(method) {
 	
 	// Applying body background on the stereo containers
 	
-	$("body").getOriginalContainer().css({ background: bodyBack });
-	$("body").getCloneContainer().css({ background: bodyBack });
+	$("body").addClass("_3dsjq_");
+	$("body").getOriginalContainer().css({ background: bodyBack, backgroundSize: "100% 100%" });
+	$("body").getCloneContainer().css({ background: bodyBack, backgroundSize: "100% 100%" });
 	
 	// Reinitiating the procedure on window resize
 	 
@@ -722,9 +734,9 @@ function adjustSideBySide(method) {
 
 function stylesAdaptation() {
 
-	var stylesheetURLs = [];
-	var stylesheetInlines = "";
-	var curURL = window.location.href;
+	var stylesheetURLs = [],
+		stylesheetInlines = "",
+		curURL = window.location.href;
 	
 	console.log("adaptation is started");
 	
@@ -796,32 +808,32 @@ function buildCloneStylesheet(inputCSS) {
 		
 	var outputCSS = [];
 	
-	var fetchRules = new RegExp("}.[^}]*","gm");
-	var rulesArr = inputCSS.match(fetchRules);		
+	var fetchRules = new RegExp("}.[^}]*","gm"),
+		rulesArr = inputCSS.match(fetchRules);		
 	
 	var outputRules;
 	
 	$.each(rulesArr, function(key, rule){
 		
-		var outputRule;
-		var newSel;
-		var selRepPatt;
-		var pushFlag = false;
+		var outputRule,
+			newSel,
+			selRepPatt,
+			pushFlag = false;
 		
 		rule = rule.replace(/(\}\*\/)|(\}\s)|(\/\*.*?\*\/)|(\s\s)/, "") + "}";
 		
-		var selector = rule.replace(/\{.*\}/,"");
-		var selArr = selector.split(/,/);
-		var style = rule.replace(/^.[^{]*/,"");
+		var selector = rule.replace(/\{.*\}/,""),
+			selArr = selector.split(/,/),
+			style = rule.replace(/^.[^{]*/,"");
 		
 		$.each(selArr, function(key, sel){
 		
-			var hoverCheck = /:hover/.test(sel);
-			var idCheck = /#/.test(sel);
+			var hoverCheck = /:hover/.test(sel),
+				idCheck = /#/.test(sel),
+				multIdCheck = false;
 		
-			if ( hoverCheck || idCheck ) {
-				pushFlag = true;
-			}
+			if ( hoverCheck || idCheck ) { pushFlag = true; }
+			if ( sel.split(/#/).length >= 3 ) { multIdCheck = true; }
 			
 			if ( hoverCheck ) {
 				hoverElemIDs.push( sel.replace(/:hover/, "") );
@@ -834,15 +846,13 @@ function buildCloneStylesheet(inputCSS) {
 				var sArr = sel.split(/\s/);
 				
 				$.each(sArr,function(k, s){
-					
 					if ( /#/.test(s) ) {
 						
 						if ( /\./.test(s) ) {
 							s = s.split(/\./);
 							s = s[0];
 						}
-						
-						var repPatt = new RegExp(s, "g");
+						var repPatt = new RegExp(s);
 						sel = sel.replace(repPatt, s+prefix);
 					}
 					
@@ -1019,11 +1029,11 @@ function buildZPlane() {
 		
 		$.each(zPlaneShiftedObjs, function(obj, level){
 				
-			var tID = obj;
-			var tSplit = tID.split(/:/);
-			var objID = tSplit[0];
-			var objPseudo = tSplit[1];
-			var target = $("html").find(objID);
+			var tID = obj,
+				tSplit = tID.split(/:/),
+				objID = tSplit[0],
+				objPseudo = tSplit[1],
+				target = $("html").find(objID);
 			
 			if ( objPseudo ) {
 				$.each(zPlaneShiftedObjs, function(key, val){
@@ -1047,6 +1057,9 @@ function buildZPlane() {
 	}
 	
 	console.log("zPlane building is complete");
+	
+	// Global var to indicate that the library is in operation
+	stereoIsOn = true;
 
 }
 
@@ -1095,14 +1108,14 @@ function zPlaneDisplace(target) {
 
 function windowViolation(target,level) {
 
-	var winW = $(window).width()/2;
-	var tOffset = target.offset();
-	var tShiftedOffset = tOffset.left-(level*shiftStep);
+	var winW = $(window).width()/2,
+		tOffset = target.offset(),
+		tShiftedOffset = tOffset.left-(level*shiftStep);
 	
 	if ( zParams.visualCues === true ) {
-		var sSA = 1+((initsSA)*(level/shiftMaxLvl))/100;
-		var tW = target.width();
-		var sDelta = ((tW*sSA)-tW)/2;
+		var sSA = 1+((initsSA)*(level/shiftMaxLvl))/100,
+			tW = target.width(),
+			sDelta = ((tW*sSA)-tW)/2;
 		tShiftedOffset = tShiftedOffset-sDelta;
 	}
 	

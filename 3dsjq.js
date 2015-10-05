@@ -1,14 +1,3 @@
-// Edits 08.04.2015 
-
-// 1. Added stereoIsOn - global variable to indicate if the library is running
-// 2. Variables definition levelled all over the library
-// 3. Fixed issue with multiple ids within a single selector
-
-// Edits 25.05.2015
-
-// 1. Fixed the issue with background stretching for original and clone containers
-// 2. Added the _3dsjq_ class to the body
-
 // Global vars
 
 var jsURLs = [],
@@ -17,6 +6,7 @@ var jsURLs = [],
 	prefix = "_3dsjq_",
 	stereoObjArr = [],
 	hoverElemIDs = [],
+	topLvl,
 	initContent,
 	bodyBack,
 	bodyInitHeight,
@@ -28,7 +18,7 @@ var jsURLs = [],
 		visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
 		scaleAmount: 10,						// amount of scaling in %s								int
 		shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-		shiftAnimDuration: 0.25					// animation duration in seconds						int
+		shiftAnimDuration: 0.25,				// animation duration in seconds						int
 	},
 	zParams,
 	shiftLimit,
@@ -93,16 +83,21 @@ function getStereoContainerWidth() {
 // Function to get the class containing the current depth level
 function getLevelClass(target) {
 	
-	var levelClass = "",
+	var levelClass = 0,
 		targetClass = target.attr("class"),
-		classes = targetClass.split(" "),
 		patt = new RegExp(prefix+"level_", "g");
-				
-	$.each(classes, function(key, val) {
-		if ( patt.test(val) ) {
-			levelClass = val;
-		}
-	});
+		
+	if ( targetClass ) {
+	
+		var classes = targetClass.split(" ")
+	
+		$.each(classes, function(key, val) {
+			if ( patt.test(val) ) {
+				levelClass = val;
+			}
+		});
+		
+	}
 	
 	if ( levelClass ) {
 		return levelClass;
@@ -283,9 +278,8 @@ $.fn.extend({
 	
 	// getClone() - Function to filter the clone element. Returns clone object.
 	getClone: function() {
-
+		
 		this.each(function() {
-			
 			outputClass = $(this).getCountClass();
 			
 		});
@@ -481,6 +475,7 @@ $.fn.extend({
 					
 					}
 				
+				
 				});
 				
 			}
@@ -568,6 +563,13 @@ function processInputHTMLstr( HTMLstr ) {
 
 }
 
+// Stereo content
+
+function stereoSniffer() {
+	
+	
+	
+}
 
 // cloneContent.js
 // Cloning procedures
@@ -728,7 +730,6 @@ function adjustSideBySide(method) {
 
 }
 
-
 // stylesAdaptation.js
 // Parsing stylesheets
 
@@ -752,137 +753,175 @@ function stylesAdaptation() {
 		.each(function(){
 			var stylesheetStr = $(this).html();
 			stylesheetInlines = stylesheetInlines + stylesheetStr;
-		});		
-		
+		});
+	
 	if ( stylesheetURLs !== "" ) {
 	
 		var done = false;
 		
 		$.each(stylesheetURLs, function(key, stylesheet){
 			
-			var extCSS = stylesheet.match(/^http\:\/\//);
-			if ( !extCSS ) {
+			requestStylesheet( stylesheet );
 			
-				$.ajaxSetup({ cache: false, async: false }); // Prevents caching
+			if ( key+1 == stylesheetURLs.length ) {
+				done = true;
 				
-				
-				$.when($.get(stylesheet, "text")).done( function(response) {
-					
-					var inputCSS = response.toString();
-					buildCloneStylesheet(inputCSS);
-					
-					if ( key+1 == stylesheetURLs.length ) {
-						done = true;
-						
-						// Building mirroring
-						buildMirroring();
-						
-						console.log("adaptation is complete");
-					
-					}
-				
-				}).fail( function(){
-				
-					console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
-				
-				});
-			
-			} else {
-			
-				console.warn( "3DSjQ warning: External stylesheet " + stylesheet + " was bypassed in order to avoid security restrictions." );
+				// Building mirroring
+				buildMirroring();
+				console.log("adaptation is complete");
 			
 			}
-		
 		});
 		
 	}
 	
 	if ( stylesheetInlines !== "" ) { buildCloneStylesheet(stylesheetInlines); }
 	
+	
 }
 
-function buildCloneStylesheet(inputCSS) {
+function requestStylesheet( stylesheet ) {
+	
+	var extCSS = stylesheet.match(/http\:\/\//);
+	
+	if ( !extCSS ) {
+	
+		$.ajaxSetup({ cache: false, async: false }); // Prevents caching
+		
+		$.when($.get(stylesheet, "text")).done( function(response) {
+			
+			var inputCSS = response.toString();
+			buildCloneStylesheet(inputCSS, stylesheet);
+		
+		}).fail( function(){
+		
+			console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
+		
+		});
+		
+	} else {
+	
+		console.warn( "3DSjQ warning: External stylesheet " + stylesheet + " was bypassed in order to avoid security restrictions." );
+	
+	}
+	
+}
+
+function buildCloneStylesheet(inputCSS, url) {
 
 	inputCSS = inputCSS.toString();
-	inputCSS = inputCSS.replace(/[\t]|[\r\n]/gm," "); // Removing line breaks and tabs
-		
+	inputCSS = inputCSS.replace(/[\t]|[\r\n]/gm," ").replace(/(\s\s)|(\/\*.*?\*\/)/gm,""); // Removing line breaks, tabs, multiple spaces and comments
+
 	var outputCSS = [];
 	
+	// Detecting @media queries ...
+	var fetchMedia = new RegExp("@media.*?{.*?}}", "gm");
+	
+	// ... and just removing them for now 
+	inputCSS = inputCSS.replace(fetchMedia, "");
+	
 	var fetchRules = new RegExp("}.[^}]*","gm"),
-		rulesArr = inputCSS.match(fetchRules);		
+		fetchImports = new RegExp('@import.*?;',"gm"),
+		rulesArr = inputCSS.match(fetchRules),
+		impArr = inputCSS.match(fetchImports);
+	
+	if ( impArr ) {
+		$.each( impArr, function( i, imp ){
+			var repPatt = new RegExp("@import|\"|'| |;","gm");
+			var ssURI = imp.replace(repPatt, "");
+			requestStylesheet( ssURI );
+		});
+	}
 	
 	var outputRules;
 	
-	$.each(rulesArr, function(key, rule){
+	if ( rulesArr ) {
+	
+		$.each(rulesArr, function(key, rule){
 		
-		var outputRule,
-			newSel,
-			selRepPatt,
-			pushFlag = false;
-		
-		rule = rule.replace(/(\}\*\/)|(\}\s)|(\/\*.*?\*\/)|(\s\s)/, "") + "}";
-		
-		var selector = rule.replace(/\{.*\}/,""),
-			selArr = selector.split(/,/),
-			style = rule.replace(/^.[^{]*/,"");
-		
-		$.each(selArr, function(key, sel){
-		
-			var hoverCheck = /:hover/.test(sel),
-				idCheck = /#/.test(sel),
-				multIdCheck = false;
-		
-			if ( hoverCheck || idCheck ) { pushFlag = true; }
-			if ( sel.split(/#/).length >= 3 ) { multIdCheck = true; }
-			
-			if ( hoverCheck ) {
-				hoverElemIDs.push( sel.replace(/:hover/, "") );
-				sel = sel.replace(/:hover/,".hover"+prefix);
-			}
-			
-			if ( idCheck ) {
+			var outputRule,
+				newSel,
+				selRepPatt,
+				pushFlag = false;
 				
-				sel = sel.replace(/^\s*/,"");
-				var sArr = sel.split(/\s/);
+			rule = rule.replace(/(^\})|(\}\*\/)|(\}\s)|(\/\*.*?\*\/)|(\s\s)/, "") + "}";
+
+			var selector = rule.replace(/\{.*\}/,""),
+				selArr = selector.split(/,/),
+				style = rule.replace(/^.[^{]*/,"");
+			
+			$.each(selArr, function(key, sel){
+			
+				var hoverCheck = /:hover/.test(sel),
+					idCheck = /#/.test(sel),
+					multIdCheck = false;
+			
+				if ( hoverCheck || idCheck ) { pushFlag = true; }
+				if ( sel.split(/#/).length >= 3 ) { multIdCheck = true; }
 				
-				$.each(sArr,function(k, s){
-					if ( /#/.test(s) ) {
-						
-						if ( /\./.test(s) ) {
-							s = s.split(/\./);
-							s = s[0];
-						}
-						var repPatt = new RegExp(s);
-						sel = sel.replace(repPatt, s+prefix);
-					}
+				if ( hoverCheck ) {
+					hoverElemIDs.push( sel.replace(/:hover/, "") );
+					sel = sel.replace(/:hover/,".hover"+prefix);
+				}
+				
+				if ( idCheck ) {
 					
-				});
+					sel = sel.replace(/^\s*/,"");
+					var sArr = sel.split(/\s/);
+					
+					$.each(sArr,function(k, s){
+						if ( /#/.test(s) ) {
+							
+							if ( /\./.test(s) ) {
+								s = s.split(/\./);
+								s = s[0];
+							}
+							var repPatt = new RegExp(s);
+
+							sel = sel.replace(repPatt, s+prefix);
+
+						}
+						
+					});
+					
+					// Relative URLs fix
+					
+					if ( /\.\.\//.test(style) ) {
+						var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
+						style = style.replace(/\.\.\//g, urlPrefix+"/");
+					}
 				
-				// Relative URLs fix
+				}
 				
-				if ( /\.\.\//.test(style) ) {
-					var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
-					style = style.replace(/\.\.\//g, urlPrefix+"/");
+				if ( pushFlag === true ) {
+				
+					outputRule = sel+style;
+					outputCSS.push(outputRule);
+					
 				}
 			
-			}
-			
-			if ( pushFlag === true ) {
-			
-				outputRule = sel+style;
-				outputCSS.push(outputRule);
-				
-			}
-			
+			});
+	
 		});
 	
-	});
+	}
 	
-	if ( outputCSS !== null ) {
-	
-		$("<style type='text/css' />")
-			.html(outputCSS)
-			.prependTo($("body"));
+	if ( outputCSS.length !== 0 ) {
+		
+		var styleClass = prefix + "style",
+			inline = $("<style type='text/css' class='" + styleClass + "' url='"+url+"' />").html(outputCSS);
+		
+		if ( $("."+styleClass).length > 0 ) {
+			
+			$("."+styleClass)
+				.last()
+				.after( inline );
+		
+		} else {
+		
+			inline.prependTo($("body"));
+		
+		}
 	
 	}
 
@@ -935,41 +974,49 @@ function buildScrollBindings() {
 }
 
 function buildCursor() {
-
-	$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor'></div>");
-	$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor'></div>");
+		
+	$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor "+prefix+"elem_ID_"+elemCount+"'></div>");
+	$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor "+prefix+"elem_ID_"+elemCount+"'></div>");
 	
-	$("."+prefix+"cursor").css({
-		position: "absolute",
-		width: "5px",
-		height: "5px",
-		"border-radius":"256px",
-		background: "red",
-		top:0,
+	var cur = $("."+prefix+"cursor");
+	
+	cur.css({
+		top: 0,
 		left: 0,
-		zIndex: 1000,
-		marginLeft: "5px",
-		marginTop: "5px"
+		position: "absolute",
+		width: "10px",
+		height: "10px",
+		background: "red",
+		//opacity: .5,
+		borderRadius: "256px",
+		zIndex: 10000,
+		pointerEvents: "none"
+	}) 
+
+	
+	// Changing the main cursor's appearance 
+
+	$("html *").css({
+		cursor: "none"
 	});
 	
-	// Hiding the default cursor
-	$("body").find("*").css({ cursor: "none" });
-		
 	var scrollDelta = 0;
-	
+
 	$("body").getOriginalContainer().on({
 		mousemove: function(e){
-		
-			var winW = $(window).width();
-					
+			
 			$("#"+prefix+"cursor_original").css({
-				top: e.pageY + scrollDelta,
+				top: e.pageY,
 				left: e.pageX
-			});
+			})
+			
+			var winW = $(window).width();
+
 			$("#"+prefix+"cursor_clone").css({
 				top: e.pageY + scrollDelta,
 				left: e.pageX
 			});
+			
 		},
 		scroll: function(e) {
 		
@@ -978,18 +1025,40 @@ function buildCursor() {
 		}
 	});
 	
-	$("."+prefix+"cursor").on({
-		mouseenter: function() {
-			$(this).css({
-				zIndex: 0
+	$("body")
+		.getOriginalContainer()
+		.find("*")
+		.on({
+		mouseover: function(e){
+			
+			var lvl = $(e.target).getLevel();
+			
+			cur.shift(lvl);
+			
+			//cur.shift(lvl);
+
+/*
+			var pars = $(this).parents(),
+				lvl = 0;
+			
+			$.each( pars, function( i, par ){
+				
+				var parLvl = $(par).getLevel();
+				
+				if ( parLvl > lvl ) {
+					lvl = parLvl;
+					return false;
+				}
+				
 			});
-		},
-		mouseleave: function(){
-			$(this).css({
-				zIndex: 10
-			});
+			
+			console.log(lvl);
+			cur.shift(lvl);
+*/
+			
 		}
 	});
+	
 
 }
 
@@ -1038,7 +1107,7 @@ function buildZPlane() {
 			if ( objPseudo ) {
 				$.each(zPlaneShiftedObjs, function(key, val){
 					if ( key == objID && /:hover/.test(key) === false ) {
-							initLvl = val;
+						initLvl = val;
 					} else {
 						initLvl = 0;
 					}
@@ -1076,11 +1145,8 @@ function zPlaneDisplace(target) {
 		
 		if ( obj.objZID == target.getElementID() ) {			
 			tPseudo = obj.objPseudo,
-			initML = obj.initML,
-			initMR = obj.initMR,
 			initLvl = obj.initLvl,
-			pseudoLvl = obj.pseudoLvl,
-			initZInd = obj.initZInd;
+			pseudoLvl = obj.pseudoLvl
 		}
 		
 	});
@@ -1088,19 +1154,13 @@ function zPlaneDisplace(target) {
 	if ( tPseudo == "hover" ) {
 		
 		target.on({
-			mouseenter: function(){
-				zPlaneShifter($(this), pseudoLvl, initML, initMR, initZInd);
-			},
-			mouseleave: function(){
-				zPlaneShifter($(this), initLvl, initML, initMR, initZInd);
-			}
+			mouseenter: function(){ $(this).shift(pseudoLvl); },
+			mouseleave: function(){ $(this).shift(initLvl); }
 		});
 		
 	} else {
 	
-		target.each(function(){
-			zPlaneShifter($(this), initLvl, initML, initMR, initZInd);	
-		});
+		target.each(function(){ $(this).shift(initLvl);	});
 		
 	}
 
@@ -1130,19 +1190,37 @@ function windowViolation(target,level) {
 
 function addLevelClass(target, level) {
 	
-	var curClass = target.attr("class") + " ",
+	var children = target.find("*"),
+		curClass = target.attr("class") + " ",
 		repPatt = new RegExp(prefix+"level_.*");
+	
 	curClass = curClass.replace(repPatt, "");
+	
 	target.getBoth().attr("class", curClass + prefix+"level_"+level);
+	
+	children.each(function(){
+		
+		var lvl = $(this).getLevel(),
+			chCurClass = $(this).attr("class") + " ";
+			
+		if ( lvl === 0 ) {
+			$(this).getBoth().attr("class", chCurClass.replace(repPatt, "") + prefix+"level_"+level);
+		}
+		
+	});
 
 }
 
 function removeLevelClass(target) {
 
-	var levelClass = getLevelClass(target);
-	target
-		.getBoth()
-		.removeClass(levelClass);
+	var levelClass = getLevelClass(target),
+		children = target.find("*");
+	
+	target.getBoth().removeClass(levelClass);
+
+	children.each(function(){
+		$(this).removeClass(levelClass);
+	})
 
 }
 
@@ -1155,7 +1233,7 @@ function zPlaneShifter(target, level, initML, initMR, initZInd) {
 	
 	var targetClone = target.getClone(),
 		wViolation = windowViolation(target, level);
-		
+	
 	var tW = target.width(),
 		tH = target.height(),
 		deltaLeft,

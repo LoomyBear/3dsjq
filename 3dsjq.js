@@ -1,16 +1,51 @@
+// Edits 08.04.2015 
+
+// 1. Added stereoIsOn - global variable to indicate if the library is running
+// 2. Variables definition levelled all over the library
+// 3. Fixed issue with multiple ids within a single selector
+
+// Edits 25.05.2015
+
+// 1. Fixed the issue with background stretching for original and clone containers
+// 2. Added the _3dsjq_ class to the body
+
+// Edits 09.06.2015
+
+// 1. Stereo content detection stage is added
+// 2. isShifted() function added
+// 3. addCountClass() function is added
+// 4. @media queries is now accounted during styles composition
+// 5. getStyles() function is added
+
+// Edits 15.06.2015
+
+// 1. "stereo-content" CSS property recognition for images added
+// 2. Removed excessive variables
+
+// Edits 15.07.2015
+// 1. Fixed the scrolling mirroring for top-to-bottom method
+// 2. All "stereo" related CSS properties are recognized.
+
+// Edits 20.07.2016
+// 1. Fixed the styles cloning function
+// 2. quit3DS() function is added
+// 3. stereoMode flag is added
+
 // Global vars
 
-var jsURLs = [],
+var protocol = location.protocol,
+	uA = navigator.userAgent.toLowerCase(),
 	zPlaneShiftedObjs = [],
 	inputParams = [],
 	prefix = "_3dsjq_",
 	stereoObjArr = [],
 	hoverElemIDs = [],
-	topLvl,
 	initContent,
 	bodyBack,
+	bodyMargin,
+	bodyPadding,
 	bodyInitHeight,
-	elemCount, // Counting number of elements in a markaup
+	elemCount, // Counting number of elements in a markup
 	zPlaneDefaultParams = {
 		method: 'left-to-right',				// side-by-side method (left-to-right, top-to-bottom)	string
 		depthBudget: 1.5,						// maximum allowed amount of shifting in %				int		
@@ -18,19 +53,19 @@ var jsURLs = [],
 		visualCues: true,						// enabling/disabling scaling for zPlanes				boolean
 		scaleAmount: 10,						// amount of scaling in %s								int
 		shiftAnim: true,						// enabling/disabling animation fot zPlane shifting		boolean
-		shiftAnimDuration: 0.25,				// animation duration in seconds						int
+		shiftAnimDuration: 0.25					// animation duration in seconds						int
 	},
 	zParams,
 	shiftLimit,
 	shiftStep,
 	shiftScale,
-	shiftAnim,
 	shiftMaxLvl,
-	sAD,
 	initsSA,
 	winW,
 	winH,
-	initDocH;
+	initDocH,
+	initHTML,
+	stereoMode = false;
 
 $.ajaxSetup({ cache: false }); // Prevents caching
 
@@ -40,7 +75,10 @@ $.ajaxSetup({ cache: false }); // Prevents caching
 function go3DS( objArr, params ) {
 
 	winW = $(window).width(),
-	winH = $(window).height();
+	winH = $(window).height(),
+	initHTML = $("body").html();
+	
+	stereoMode = true;
 
 	if ( objArr ) {
 		zPlaneShiftedObjs = objArr;
@@ -50,8 +88,19 @@ function go3DS( objArr, params ) {
 		inputParams = params;
 	}
 	
+	zParams = zPlaneDefaultParams;
+	
+	// Checking out input params
+	if ( inputParams ) {
+		$.each(inputParams, function(param, val){
+			if ( zParams[param] != val ) {
+				zParams[param] = val;	
+			}
+		});
+	}
+	
 	cloneContent();
-
+	
 }
 
 
@@ -83,21 +132,16 @@ function getStereoContainerWidth() {
 // Function to get the class containing the current depth level
 function getLevelClass(target) {
 	
-	var levelClass = 0,
+	var levelClass = "",
 		targetClass = target.attr("class"),
+		classes = targetClass.split(" "),
 		patt = new RegExp(prefix+"level_", "g");
-		
-	if ( targetClass ) {
-	
-		var classes = targetClass.split(" ")
-	
-		$.each(classes, function(key, val) {
-			if ( patt.test(val) ) {
-				levelClass = val;
-			}
-		});
-		
-	}
+				
+	$.each(classes, function(key, val) {
+		if ( patt.test(val) ) {
+			levelClass = val;
+		}
+	});
 	
 	if ( levelClass ) {
 		return levelClass;
@@ -194,7 +238,96 @@ $.fn.extend({
 		
 		return outputClass;
 		
+	},
+	
+	// addCountClass() - function to addCountClass to the new elements
+	addCountClass: function(){
+		
+		this.each(function(){
+			
+			var last = $("body").getOriginalContainer().find("*").last().getCountClass(),
+				patt = new RegExp(prefix+"elem_ID_", "g"),
+				newCC = parseInt(last.replace(patt, ""))+1;
+			
+			$(this)
+				.getBoth()
+				.addClass(prefix+"elem_ID_"+newCC);
+			
+		});
+		
+	},
+	
+	getStyles: function(){
+		
+		this.after("<div id='"+prefix+"style_ref'></div>");
+		
+		var dom = this.get(0),
+			style,
+			styleRef,
+			returns = {},
+			ref = document.getElementById(""+prefix+"style_ref");
+        
+        if(window.getComputedStyle){
+            var camelize = function(a,b){
+                return b.toUpperCase();
+            };
+            
+            style = window.getComputedStyle(dom, null),
+            styleRef = window.getComputedStyle(ref, null);
+            
+            for(var i = 0, l = style.length; i < l; i++){
+            
+                var prop = style[i],
+                	camel = prop.replace(/\-([a-z])/g, camelize),
+                	val = style.getPropertyValue(style[i]),
+                	valRef = styleRef.getPropertyValue(styleRef[i]);
+                
+                if ( val !== valRef ) { returns[camel] = val; };
+            
+            };
+            return returns;
+        };
+        if(style = dom.currentStyle){
+            for(var prop in style){
+                returns[prop] = style[prop];
+            };
+            return returns;
+        };
+        
+        ref.remove();
+        return this.css();
+		
 	},		
+	
+	// isShifted() - checks if the current element is shifted, returns depth level if the element is shifted; 
+	isShifted: function() {
+		
+		var isShifted = false;
+		
+		this.each(function() {
+			
+			var tCC = $(this).getCountClass();
+			
+			$.each(zPlaneShiftedObjs, function( elemID, level ){
+				
+				$("body")
+					.getOriginalContainer()
+					.find("" + elemID)
+					.each(function(){
+					
+						if ( tCC == $(this).getCountClass() ) {
+							isShifted = level;
+							return false;
+						}
+						
+					});
+			});
+			
+		});
+		
+		return isShifted;
+		
+	},
 	
 	// isCalculated() - checks if the current element params have being calculated and pushed to stereoObjArr; 
 	isCalculated: function() {
@@ -278,8 +411,9 @@ $.fn.extend({
 	
 	// getClone() - Function to filter the clone element. Returns clone object.
 	getClone: function() {
-		
+
 		this.each(function() {
+			
 			outputClass = $(this).getCountClass();
 			
 		});
@@ -475,7 +609,6 @@ $.fn.extend({
 					
 					}
 				
-				
 				});
 				
 			}
@@ -563,14 +696,6 @@ function processInputHTMLstr( HTMLstr ) {
 
 }
 
-// Stereo content
-
-function stereoSniffer() {
-	
-	
-	
-}
-
 // cloneContent.js
 // Cloning procedures
 
@@ -581,6 +706,8 @@ function cloneContent() {
 	// Vars
 	
 	bodyBack = $("body").css("background"),
+	bodyMargin = $("body").css("margin"),
+	bodyPadding = $("body").css("padding"),
 	initContent = $("body").html(),
 	initDocH = $(document).height(),
 	bodyInitHeight = $("body").outerHeight();
@@ -638,10 +765,146 @@ function cloneContent() {
 	
 	console.log("cloning is complete");
 	
-	// Launching styles adaptation
-	stylesAdaptation();
+	// Detecting stereo content
+	detectStereoContent();
 
 }
+
+// Stereo content detection
+
+function detectStereoContent(){
+	
+	console.log("detection of stereo content is started");
+	
+	// img srcset support
+	
+	getOriginalContainer()
+		.find("img")
+		.each(function(){
+			var srcset = $(this).attr("srcset");
+			
+			if ( srcset ) {
+				
+				if ( / stereo/.test(srcset) ) {
+					
+					var stereoURL = srcset.replace(/ stereo/, "");
+					buildStereoContainer( $(this), stereoURL, "img" );
+					
+				}
+			}
+		});
+	
+	console.log("detection of stereo content is ended");
+	
+	// Launching styles adaptation
+	stylesAdaptation();
+	
+}
+
+function buildStereoContainer( obj, url, stereoParams ) {
+	
+	if ( obj.length > 0 ) {
+		
+		var	img = new Image(),
+			origH = obj.height(),
+			origW = obj.width(),
+			origS = obj.getStyles(),
+			contClass = prefix + "stereo_container",
+			countClass = obj.getCountClass();
+		
+		img.src = url;
+		
+		var imgR = (img.width/2)/img.height;
+		
+		obj
+			.getBoth()
+			.wrap("<div class='"+contClass+" "+countClass+"'></div>")
+			.hide();
+			
+		var objCont = obj.parent();
+		
+		if ( stereoParams ) {
+			
+			$.each(stereoParams, function(i, param){
+				
+				var rule = param.replace(/\s|\;/gm,"").split(":"),
+					prop = rule[0],
+					val = rule[1];
+				
+				if ( prop === "stereo-content" && val === "stereo" ) {
+					
+					objCont
+						.getBoth()
+						.css(origS)
+						.width( origW )
+						.height( origH*2 )
+						.css({ backgroundImage: "url('" + url + "')", backgroundSize: origW*2+"px" });
+					
+					objCont
+						.getClone()
+						.css({ backgroundPosition: "right top" });
+				}
+				
+				if ( prop === "stereo-render-option" ) {
+					
+					if ( val === "left" ) { objCont.getClone().css({ background: "none" }); }
+					else if ( val === "right" ) { objCont.css({ background: "none" }); }
+						
+				}
+				
+				if ( prop === "stereo-size-type" && val === "half" ) {
+					objCont
+						.getBoth()
+						.height(origH)
+						.css({ backgroundSize: "200% 100%" });					
+				}
+				
+				if ( prop === "stereo-order-type" && val === "rl") {
+					objCont
+						.css({ backgroundPosition: "right top" })
+						.getClone()
+						.css({ backgroundPosition: "left top" });
+				}
+				
+				if ( prop === "stereo-format" && val === "top-bottom" ) {
+					
+					if ( zParams.method === "left-to-right" ) {
+						
+						objCont
+							.getBoth()
+							.height(origH/2)
+							.css({ backgroundSize: "100% 200%" });
+						objCont
+							.getClone()
+							.css({ backgroundPosition: "left bottom" });
+						
+					} else if ( zParams.method === "top-to-bottom" ) {
+						
+						objCont
+							.getBoth()
+							.height(origH/2)
+							.css({ backgroundSize: "100% 200%" });
+						objCont
+							.getClone()
+							.css({ backgroundPosition: "left bottom" })
+						
+					}
+				}
+				
+			});
+			
+		}
+			
+		if ( obj.isShifted() ) {
+			
+			var lvl = $(this).isShifted();
+			$(this).shift(lvl);
+			
+		};
+		
+	}
+	
+} 
 
 function adjustSideBySide(method) {
 	
@@ -660,6 +923,7 @@ function adjustSideBySide(method) {
 			height: winH,
 			position: "absolute",
 			top: margin,
+			"overflow-y": "scroll",
 			"-webkit-transform": "scaleY(0.5)",
 			"-moz-transform": "scaleY(0.5)",
 			"-ms-transform": "scaleY(0.5)",
@@ -675,7 +939,6 @@ function adjustSideBySide(method) {
 			"background-size": "100% 100%",
 			"background-position": "center center",
 			"background-repeat": "no-repeat",
-			overflow: "hidden",
 			position: "relative"
 		});
 		
@@ -722,16 +985,15 @@ function adjustSideBySide(method) {
 	 
 	$(window).on({
 		resize: function(){
-			winW = $(window).width(),
-			winH = $(window).height();
-			adjustSideBySide(method);
+			if ( stereoMode ) {
+				winW = $(window).width(),
+				winH = $(window).height();
+				adjustSideBySide(method);
+			}
 		}
 	});
 
 }
-
-// stylesAdaptation.js
-// Parsing stylesheets
 
 function stylesAdaptation() {
 
@@ -739,8 +1001,8 @@ function stylesAdaptation() {
 		stylesheetInlines = "",
 		curURL = window.location.href;
 	
-	console.log("adaptation is started");
-	
+		console.log("adaptation is started");
+		
 	$("html")
 		.find("link[rel='stylesheet']")
 		.each(function(){
@@ -753,175 +1015,179 @@ function stylesAdaptation() {
 		.each(function(){
 			var stylesheetStr = $(this).html();
 			stylesheetInlines = stylesheetInlines + stylesheetStr;
-		});
-	
+		});		
+		
 	if ( stylesheetURLs !== "" ) {
 	
 		var done = false;
 		
-		$.each(stylesheetURLs, function(key, stylesheet){
+		$.each(stylesheetURLs, function(key, stylesheet){			
 			
-			requestStylesheet( stylesheet );
+			$.ajaxSetup({ cache: false, async: false }); // Prevents caching
 			
-			if ( key+1 == stylesheetURLs.length ) {
-				done = true;
+			$.when($.get(stylesheet, "text")).done( function(response) {
 				
-				// Building mirroring
-				buildMirroring();
-				console.log("adaptation is complete");
+				var inputCSS = response.toString().replace(/[\t]|[\r\n]/gm," ");
+				detectStereoCSS(inputCSS);
+				buildCloneStylesheet(inputCSS);
+				
+				if ( key+1 == stylesheetURLs.length ) {
+					done = true;
+					
+					// Building mirroring
+					buildMirroring();
+					console.log("adaptation is complete");
+				
+				}
 			
-			}
+			}).fail( function(){
+			
+				console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
+			
+			});
+		
 		});
 		
 	}
 	
 	if ( stylesheetInlines !== "" ) { buildCloneStylesheet(stylesheetInlines); }
 	
-	
 }
 
-function requestStylesheet( stylesheet ) {
+function detectStereoCSS(inputCSS) {
+
+	var stereoProps = [
+			"stereo-content",			// stereo | none
+			"stereo-render-option",		// stereo | right | left
+			"stereo-size-type",			// half | full
+			"stereo-order-type",		// lr | rl
+			"stereo-format"				// top-bottom | side-by-side | interlaced
+		],
+		mediaQ = "3d-display",
+		stereoParams = [];
 	
-	var extCSS = stylesheet.match(/http\:\/\//);
+	var rules = inputCSS.match(/\w.*?{.*?}/g);
 	
-	if ( !extCSS ) {
-	
-		$.ajaxSetup({ cache: false, async: false }); // Prevents caching
+	$.each(rules, function(x, rule){
 		
-		$.when($.get(stylesheet, "text")).done( function(response) {
+		if ( /stereo-|stereo:/.test(rule) ) {
 			
-			var inputCSS = response.toString();
-			buildCloneStylesheet(inputCSS, stylesheet);
+			// bypassing commented rules
+			rule = rule.replace(/\/\*.*?\*\//gm, "");
+			console.log(rule);
+			
+			$.each(stereoProps, function(i, prop){
+				
+				var propPatt = new RegExp(prop+".*?\;", "g");
+				
+				if ( propPatt.test(rule) ) {
+					
+					prop = rule.match(propPatt);
+					stereoParams.push(prop[0]);
+					
+				}
+				
+			});
+			
+			var elem = rule.match(/^.*\{/g);
+				elem = elem[0].replace(/\{|\s\{/, ""),
+				obj = $("body").getOriginalContainer().find(""+elem),
+				url = obj.attr("src");
+			
+			buildStereoContainer( obj, url, stereoParams );
 		
-		}).fail( function(){
+		}
 		
-			console.warn( "3DSjQ error occured: " + stylesheet + " cannot be opened" );
-		
-		});
-		
-	} else {
-	
-		console.warn( "3DSjQ warning: External stylesheet " + stylesheet + " was bypassed in order to avoid security restrictions." );
-	
-	}
+	});
 	
 }
 
-function buildCloneStylesheet(inputCSS, url) {
-
-	inputCSS = inputCSS.toString();
-	inputCSS = inputCSS.replace(/[\t]|[\r\n]/gm," ").replace(/(\s\s)|(\/\*.*?\*\/)/gm,""); // Removing line breaks, tabs, multiple spaces and comments
-
+function buildCloneStylesheet(inputCSS) {
+	
 	var outputCSS = [];
 	
-	// Detecting @media queries ...
-	var fetchMedia = new RegExp("@media.*?{.*?}}", "gm");
-	
-	// ... and just removing them for now 
-	inputCSS = inputCSS.replace(fetchMedia, "");
-	
 	var fetchRules = new RegExp("}.[^}]*","gm"),
-		fetchImports = new RegExp('@import.*?;',"gm"),
-		rulesArr = inputCSS.match(fetchRules),
-		impArr = inputCSS.match(fetchImports);
-	
-	if ( impArr ) {
-		$.each( impArr, function( i, imp ){
-			var repPatt = new RegExp("@import|\"|'| |;","gm");
-			var ssURI = imp.replace(repPatt, "");
-			requestStylesheet( ssURI );
-		});
-	}
+		rulesArr = inputCSS.match(fetchRules);		
 	
 	var outputRules;
 	
-	if ( rulesArr ) {
-	
-		$.each(rulesArr, function(key, rule){
+	$.each(rulesArr, function(key, rule){
 		
-			var outputRule,
-				newSel,
-				selRepPatt,
-				pushFlag = false;
-				
-			rule = rule.replace(/(^\})|(\}\*\/)|(\}\s)|(\/\*.*?\*\/)|(\s\s)/, "") + "}";
-
-			var selector = rule.replace(/\{.*\}/,""),
-				selArr = selector.split(/,/),
-				style = rule.replace(/^.[^{]*/,"");
+		var outputRule,
+			newSel,
+			selRepPatt,
+			pushFlag = false;
+		
+		rule = rule.replace(/(\}\*\/)|(\}\s)|(\/\*.*?\*\/)|(\s\s)/, "") + "}";
+		
+		var selector = rule.replace(/\{.*\}/,""),
+			selArr = selector.split(/,/),
+			style = rule.replace(/^.[^{]*/,"");
+		
+		$.each(selArr, function(key, sel){
+		
+			var hoverCheck = /:hover/.test(sel),
+				idCheck = /#/.test(sel),
+				multIdCheck = false,
+				mediaSel = /media/.test(sel);
 			
-			$.each(selArr, function(key, sel){
+			if ( mediaSel ) { pushFlag = true; }
+			if ( hoverCheck || idCheck ) { pushFlag = true; }
+			if ( sel.split(/#/).length >= 3 ) { multIdCheck = true; }
 			
-				var hoverCheck = /:hover/.test(sel),
-					idCheck = /#/.test(sel),
-					multIdCheck = false;
+			if ( hoverCheck ) {
+				hoverElemIDs.push( sel.replace(/:hover/, "") );
+				sel = sel.replace(/:hover/,".hover"+prefix);
+			}
 			
-				if ( hoverCheck || idCheck ) { pushFlag = true; }
-				if ( sel.split(/#/).length >= 3 ) { multIdCheck = true; }
+			if ( idCheck ) {
 				
-				if ( hoverCheck ) {
-					hoverElemIDs.push( sel.replace(/:hover/, "") );
-					sel = sel.replace(/:hover/,".hover"+prefix);
-				}
+				sel = sel.replace(/^\s*/,"");
+				var sArr = sel.split(/\s/);
 				
-				if ( idCheck ) {
-					
-					sel = sel.replace(/^\s*/,"");
-					var sArr = sel.split(/\s/);
-					
-					$.each(sArr,function(k, s){
-						if ( /#/.test(s) ) {
-							
-							if ( /\./.test(s) ) {
-								s = s.split(/\./);
-								s = s[0];
-							}
-							var repPatt = new RegExp(s);
-
-							sel = sel.replace(repPatt, s+prefix);
-
-						}
+				$.each(sArr,function(k, s){
+					if ( /#/.test(s) ) {
 						
-					});
+						if ( /\./.test(s) ) {
+							s = s.split(/\./);
+							s = s[0];
+						}
+						var repPatt = new RegExp(s);
+						sel = sel.replace(repPatt, s+prefix);
 					
-					// Relative URLs fix
-					
-					if ( /\.\.\//.test(style) ) {
-						var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
-						style = style.replace(/\.\.\//g, urlPrefix+"/");
 					}
-				
-				}
-				
-				if ( pushFlag === true ) {
-				
-					outputRule = sel+style;
-					outputCSS.push(outputRule);
 					
+				});
+				
+				// Relative URLs fix
+				
+				if ( /\.\.\//.test(style) ) {
+					var urlPrefix = document.location.href.replace(/#/, "").replace(/\w+\.html/,"");
+					style = style.replace(/\.\.\//g, urlPrefix+"/");
 				}
 			
-			});
-	
+			}
+			
+			if ( pushFlag === true ) {
+				
+				outputRule = sel+style;
+				outputCSS.push(outputRule);
+				
+			}
+			
 		});
 	
-	}
+	});
 	
-	if ( outputCSS.length !== 0 ) {
+	if ( outputCSS !== null ) {
 		
-		var styleClass = prefix + "style",
-			inline = $("<style type='text/css' class='" + styleClass + "' url='"+url+"' />").html(outputCSS);
+		var inlineOutputCSS = "";
 		
-		if ( $("."+styleClass).length > 0 ) {
-			
-			$("."+styleClass)
-				.last()
-				.after( inline );
+		$.each(outputCSS, function(k,r){
+			inlineOutputCSS = inlineOutputCSS + r;
+		})
 		
-		} else {
-		
-			inline.prependTo($("body"));
-		
-		}
+		$("<style type='text/css'>"+inlineOutputCSS+"</style>").prependTo($("body"));
 	
 	}
 
@@ -963,60 +1229,52 @@ function buildHoverBindings(objs) {
 }
 
 function buildScrollBindings() {
-	
-	$("body").getOriginalContainer().on({
+
+	$("."+prefix+"container").on({
 		scroll: function(){
 			var scrollTop = $(this).scrollTop();
-			$("body").getCloneContainer().scrollTop(scrollTop);
+			$("."+prefix+"container").scrollTop(scrollTop);
 		}
 	});
 
 }
 
 function buildCursor() {
-		
-	$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor "+prefix+"elem_ID_"+elemCount+"'></div>");
-	$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor "+prefix+"elem_ID_"+elemCount+"'></div>");
+
+	$("body").getOriginalContainer().prepend("<div id='"+prefix+"cursor_original' class='"+prefix+"cursor'></div>");
+	$("body").getCloneContainer().prepend("<div id='"+prefix+"cursor_clone' class='"+prefix+"cursor'></div>");
 	
-	var cur = $("."+prefix+"cursor");
-	
-	cur.css({
-		top: 0,
-		left: 0,
+	$("."+prefix+"cursor").css({
 		position: "absolute",
-		width: "10px",
-		height: "10px",
-		background: "red",
-		//opacity: .5,
-		borderRadius: "256px",
-		zIndex: 10000,
-		pointerEvents: "none"
-	}) 
-
-	
-	// Changing the main cursor's appearance 
-
-	$("html *").css({
-		cursor: "none"
+		width: "5px",
+		height: "5px",
+		"border-radius":"256px",
+		background: "blue",
+		top:0,
+		left: 0,
+		zIndex: 1000,
+		marginLeft: "5px",
+		marginTop: "5px"
 	});
 	
+	// Hiding the default cursor
+	$("body").find("*").css({ cursor: "none" });
+		
 	var scrollDelta = 0;
-
+	
 	$("body").getOriginalContainer().on({
 		mousemove: function(e){
-			
-			$("#"+prefix+"cursor_original").css({
-				top: e.pageY,
-				left: e.pageX
-			})
-			
+		
 			var winW = $(window).width();
-
+					
+			$("#"+prefix+"cursor_original").css({
+				top: e.pageY + scrollDelta,
+				left: e.pageX
+			});
 			$("#"+prefix+"cursor_clone").css({
 				top: e.pageY + scrollDelta,
 				left: e.pageX
 			});
-			
 		},
 		scroll: function(e) {
 		
@@ -1025,40 +1283,18 @@ function buildCursor() {
 		}
 	});
 	
-	$("body")
-		.getOriginalContainer()
-		.find("*")
-		.on({
-		mouseover: function(e){
-			
-			var lvl = $(e.target).getLevel();
-			
-			cur.shift(lvl);
-			
-			//cur.shift(lvl);
-
-/*
-			var pars = $(this).parents(),
-				lvl = 0;
-			
-			$.each( pars, function( i, par ){
-				
-				var parLvl = $(par).getLevel();
-				
-				if ( parLvl > lvl ) {
-					lvl = parLvl;
-					return false;
-				}
-				
+	$("."+prefix+"cursor").on({
+		mouseenter: function() {
+			$(this).css({
+				zIndex: 0
 			});
-			
-			console.log(lvl);
-			cur.shift(lvl);
-*/
-			
+		},
+		mouseleave: function(){
+			$(this).css({
+				zIndex: 10
+			});
 		}
 	});
-	
 
 }
 
@@ -1072,26 +1308,13 @@ function buildZPlane() {
 	
 	var winW = $(window).width();
 	
-	zParams = zPlaneDefaultParams;
-	
-	// Checking out input params
-	if ( inputParams ) {
-		$.each(inputParams, function(param, val){
-			if ( zParams[param] != val ) {
-				zParams[param] = val;	
-			}
-		});
-	}
-	
 	// Specifying the maximum limit for shifting according to incoming parameter
 	
 	shiftLimit = Math.round(((winW/100)*zParams.depthBudget)/2);
 	shiftStep = Math.round(shiftLimit/zParams.levels);
 	
 	shiftScale = zParams.visualCues;
-	shiftAnim = zParams.shiftAnim;
 	shiftMaxLvl = zParams.levels;
-	sAD = zParams.shiftAnimDuration;
 	initsSA = zParams.scaleAmount;
 	
 	if ( zPlaneShiftedObjs !== null ) {	
@@ -1107,7 +1330,7 @@ function buildZPlane() {
 			if ( objPseudo ) {
 				$.each(zPlaneShiftedObjs, function(key, val){
 					if ( key == objID && /:hover/.test(key) === false ) {
-						initLvl = val;
+							initLvl = val;
 					} else {
 						initLvl = 0;
 					}
@@ -1145,8 +1368,11 @@ function zPlaneDisplace(target) {
 		
 		if ( obj.objZID == target.getElementID() ) {			
 			tPseudo = obj.objPseudo,
+			initML = obj.initML,
+			initMR = obj.initMR,
 			initLvl = obj.initLvl,
-			pseudoLvl = obj.pseudoLvl
+			pseudoLvl = obj.pseudoLvl,
+			initZInd = obj.initZInd;
 		}
 		
 	});
@@ -1154,13 +1380,19 @@ function zPlaneDisplace(target) {
 	if ( tPseudo == "hover" ) {
 		
 		target.on({
-			mouseenter: function(){ $(this).shift(pseudoLvl); },
-			mouseleave: function(){ $(this).shift(initLvl); }
+			mouseenter: function(){
+				zPlaneShifter($(this), pseudoLvl, initML, initMR, initZInd);
+			},
+			mouseleave: function(){
+				zPlaneShifter($(this), initLvl, initML, initMR, initZInd);
+			}
 		});
 		
 	} else {
 	
-		target.each(function(){ $(this).shift(initLvl);	});
+		target.each(function(){
+			zPlaneShifter($(this), initLvl, initML, initMR, initZInd);	
+		});
 		
 	}
 
@@ -1172,7 +1404,7 @@ function windowViolation(target,level) {
 		tOffset = target.offset(),
 		tShiftedOffset = tOffset.left-(level*shiftStep);
 	
-	if ( zParams.visualCues === true ) {
+	if ( zParams && zParams.visualCues === true ) {
 		var sSA = 1+((initsSA)*(level/shiftMaxLvl))/100,
 			tW = target.width(),
 			sDelta = ((tW*sSA)-tW)/2;
@@ -1190,37 +1422,19 @@ function windowViolation(target,level) {
 
 function addLevelClass(target, level) {
 	
-	var children = target.find("*"),
-		curClass = target.attr("class") + " ",
+	var curClass = target.attr("class") + " ",
 		repPatt = new RegExp(prefix+"level_.*");
-	
 	curClass = curClass.replace(repPatt, "");
-	
 	target.getBoth().attr("class", curClass + prefix+"level_"+level);
-	
-	children.each(function(){
-		
-		var lvl = $(this).getLevel(),
-			chCurClass = $(this).attr("class") + " ";
-			
-		if ( lvl === 0 ) {
-			$(this).getBoth().attr("class", chCurClass.replace(repPatt, "") + prefix+"level_"+level);
-		}
-		
-	});
 
 }
 
 function removeLevelClass(target) {
 
-	var levelClass = getLevelClass(target),
-		children = target.find("*");
-	
-	target.getBoth().removeClass(levelClass);
-
-	children.each(function(){
-		$(this).removeClass(levelClass);
-	})
+	var levelClass = getLevelClass(target);
+	target
+		.getBoth()
+		.removeClass(levelClass);
 
 }
 
@@ -1233,7 +1447,7 @@ function zPlaneShifter(target, level, initML, initMR, initZInd) {
 	
 	var targetClone = target.getClone(),
 		wViolation = windowViolation(target, level);
-	
+		
 	var tW = target.width(),
 		tH = target.height(),
 		deltaLeft,
@@ -1299,4 +1513,11 @@ function zPlaneShifter(target, level, initML, initMR, initZInd) {
 			});
 	}
 
+}
+
+function quit3DS() {
+	
+	$("body").html(initHTML);
+	stereoMode = false;
+	
 }

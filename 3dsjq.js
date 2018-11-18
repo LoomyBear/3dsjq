@@ -1136,8 +1136,6 @@ function buildCloneStylesheet(inputCSS) {
 					newRule = updateRule(rule);
 				}
 				if (newRule) {
-					console.log(newRule);
-					console.log(outputCSS);
 					outputCSS = outputCSS + newRule;
 				}
 		}

@@ -31,6 +31,9 @@
 // 2. quit3DS() function is added
 // 3. stereoMode flag is added
 
+// Edits 12.11.2018
+// 1. Debugging falg added to conversion functions
+
 // Global vars
 
 var protocol = location.protocol,
@@ -699,7 +702,7 @@ function processInputHTMLstr( HTMLstr ) {
 // cloneContent.js
 // Cloning procedures
 
-function cloneContent() {
+function cloneContent( debug ) {
 
 	console.log("cloning is started");
 	
@@ -766,13 +769,13 @@ function cloneContent() {
 	console.log("cloning is complete");
 	
 	// Detecting stereo content
-	detectStereoContent();
+	if ( !debug ) { detectStereoContent(); }
 
 }
 
 // Stereo content detection
 
-function detectStereoContent(){
+function detectStereoContent( debug ){
 	
 	console.log("detection of stereo content is started");
 	
@@ -797,7 +800,7 @@ function detectStereoContent(){
 	console.log("detection of stereo content is ended");
 	
 	// Launching styles adaptation
-	stylesAdaptation();
+	if (!debug){ stylesAdaptation(); }
 	
 }
 
@@ -995,7 +998,7 @@ function adjustSideBySide(method) {
 
 }
 
-function stylesAdaptation() {
+function stylesAdaptation( debug ) {
 
 	var stylesheetURLs = [],
 		stylesheetInlines = "",
@@ -1197,14 +1200,14 @@ function buildCloneStylesheet(inputCSS) {
 // buildMirroring.js
 // Interaction mirroring procedures
 
-function buildMirroring() {
+function buildMirroring( debug ) {
 
 	buildHoverBindings(hoverElemIDs);
 	buildScrollBindings();
 	buildCursor();
 	
 	// Building zPlane
-	buildZPlane();
+	if (!debug) { buildZPlane(); }
 
 }
 
